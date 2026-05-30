@@ -1,1 +1,2 @@
-npm install && npx quartz build
+npm install
+npx quartz build

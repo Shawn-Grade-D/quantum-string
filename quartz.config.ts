@@ -8,7 +8,7 @@ import * as Plugin from "./quartz/plugins"
  */
 const config: QuartzConfig = {
   configuration: {
-    pageTitle: "老肖的数字花园",
+    pageTitle: "量子弦之链 | Quantum String",
     pageTitleSuffix: "",
     enableSPA: true,
     enablePopovers: true,
@@ -95,3 +95,4 @@ const config: QuartzConfig = {
 }
 
 export default config
+

@@ -13,6 +13,19 @@
   --max-w: 800px;
 }
 
+/* 浅色模式 */
+[data-theme="light"] {
+  --bg: #ffffff;
+  --card-bg: #f6f8fa;
+  --border: #d0d7de;
+  --text: #1f2328;
+  --text-muted: #656d76;
+  --accent: #0969da;
+  --accent-hover: #0550ae;
+  --danger: #cf222e;
+  --success: #1a7f37;
+}
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
@@ -107,6 +120,28 @@ body {
 }
 .btn-danger:hover { background: var(--danger); color: #fff; }
 .btn-block { width: 100%; text-align: center; }
+
+/* ====== 主题切换按钮 ====== */
+.theme-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s;
+  color: var(--text-muted);
+}
+.theme-btn:hover { border-color: var(--accent); }
+.nav-actions {
+  display: flex;
+  align-items: center;
+}
 
 /* ====== 社区头部 ====== */
 .community-header {

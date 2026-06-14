@@ -2,7 +2,7 @@ name = "quantum-string"
 compatibility_date = "2026-06-14"
 
 # 主站静态文件（Quartz 构建产物）
-assets = { directory = "public", not_found_handling = "404.html" }
+assets = { directory = "public", not_found_handling = "404-page" }
 
 # 兼容性标志
 compatibility_flags = ["nodejs_compat"]

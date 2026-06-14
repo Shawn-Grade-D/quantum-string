@@ -4,11 +4,17 @@
 async function checkSession() {
   const { data: { session } } = await supabase.auth.getSession();
   if (session) {
-    document.getElementById('userDisplay').textContent = session.user.user_metadata?.nickname || session.user.email;
-    document.getElementById('userDisplay').style.display = 'inline';
-    document.getElementById('loginBtn').style.display = 'none';
-    document.getElementById('registerBtn').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'inline';
+    const userDisplay = document.getElementById('userDisplay');
+    if (userDisplay) {
+      userDisplay.textContent = session.user.user_metadata?.nickname || session.user.email;
+      userDisplay.style.display = 'inline';
+    }
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (loginBtn) loginBtn.style.display = 'none';
+    if (registerBtn) registerBtn.style.display = 'none';
+    if (logoutBtn) logoutBtn.style.display = 'inline';
   }
   return session;
 }

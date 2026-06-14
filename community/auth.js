@@ -1,7 +1,7 @@
 // 量子弦之链 · 社区认证模块
 
-// 确保 supabase 客户端已就绪
-const supabase = window._supabase;
+// 使用全局 supabaseClient
+var supabase = window.supabaseClient;
 
 
 // ====== 检查登录状态 ======

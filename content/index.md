@@ -13,7 +13,7 @@ description: Quantum String — 基于量子通信、弦理论与区块链技术
 
 欢迎志同道合的朋友加入我们的弦论社区：
 
-› [**进入社区 →**](/community/)
+› <a href="/community/" target="_blank" rel="noopener"><strong>进入社区 →</strong></a>
 
 在这里，你可以注册账号、发帖讨论、分享观点。
 

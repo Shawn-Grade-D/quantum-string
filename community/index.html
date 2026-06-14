@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>社区 · 量子弦之链</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">🎵 量子弦之链</a>
+      <div class="nav-links">
+        <a href="index.html">社区</a>
+        <a href="https://quantum-string.com" target="_blank">主站</a>
+      </div>
+      <div class="nav-auth">
+        <span id="userDisplay" style="display:none;"></span>
+        <a href="login.html" id="loginBtn">登录</a>
+        <a href="register.html" id="registerBtn">注册</a>
+        <a href="#" id="logoutBtn" style="display:none;" onclick="logout()">退出</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="community-header">
+      <h1>🪐 弦论社区</h1>
+      <p class="subtitle">量子通信 · 弦理论 · 区块链 · 思想碰撞</p>
+      <p class="intro-text">这里是一小群人的精神角落。聊科学、聊技术、聊哲学，聊一切值得聊的。</p>
+      <a href="new-post.html" id="newPostBtn" class="btn btn-primary">✏️ 发个帖子</a>
+    </div>
+
+    <div class="posts-filters">
+      <button class="filter-btn active" data-filter="latest">最新</button>
+      <button class="filter-btn" data-filter="hot">热门</button>
+    </div>
+
+    <div id="postsList" class="posts-list">
+      <div class="loading">加载中...</div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>量子弦之链 · 一个小众社区</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

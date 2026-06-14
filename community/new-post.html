@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>发帖 · 量子弦之链</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">🎵 量子弦之链</a>
+      <div class="nav-links">
+        <a href="index.html">社区</a>
+        <a href="https://quantum-string.com" target="_blank">主站</a>
+      </div>
+      <div class="nav-auth">
+        <span id="userDisplay" style="display:none;"></span>
+        <a href="login.html" id="loginBtn">登录</a>
+        <a href="register.html" id="registerBtn">注册</a>
+        <a href="#" id="logoutBtn" style="display:none;" onclick="logout()">退出</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="post-form-wrapper">
+      <h1>✏️ 写一篇文章</h1>
+      <form id="newPostForm">
+        <div class="form-group">
+          <label>标题</label>
+          <input type="text" id="postTitle" required placeholder="给你的文章起个名字" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label>内容</label>
+          <textarea id="postContent" rows="12" required placeholder="写点什么吧...支持 Markdown 格式"></textarea>
+        </div>
+        <div class="form-group">
+          <label>标签（逗号分隔）</label>
+          <input type="text" id="postTags" placeholder="例如：弦理论, 量子计算, 哲学">
+        </div>
+        <div id="postError" class="error-msg" style="display:none;"></div>
+        <button type="submit" class="btn btn-primary">发布</button>
+        <a href="index.html" class="btn btn-outline">取消</a>
+      </form>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="postDetailTitle">帖子 · 量子弦之链</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">🎵 量子弦之链</a>
+      <div class="nav-links">
+        <a href="index.html">社区</a>
+        <a href="https://quantum-string.com" target="_blank">主站</a>
+      </div>
+      <div class="nav-auth">
+        <span id="userDisplay" style="display:none;"></span>
+        <a href="login.html" id="loginBtn">登录</a>
+        <a href="register.html" id="registerBtn">注册</a>
+        <a href="#" id="logoutBtn" style="display:none;" onclick="logout()">退出</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div id="postDetail" class="post-detail">
+      <div class="loading">加载中...</div>
+    </div>
+
+    <div class="comments-section">
+      <h3>💬 评论</h3>
+      <div id="commentForm" style="display:none;">
+        <textarea id="commentContent" rows="3" placeholder="写下你的想法..." required></textarea>
+        <button class="btn btn-primary" onclick="submitComment()">发表评论</button>
+      </div>
+      <div id="commentsList" class="comments-list"></div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 · 量子弦之链</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-inner">
+      <a href="index.html" class="logo">🎵 量子弦之链</a>
+      <div class="nav-links">
+        <a href="index.html">社区</a>
+        <a href="https://quantum-string.com" target="_blank">主站</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container auth-page">
+    <div class="auth-card">
+      <h2>登录</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>邮箱</label>
+          <input type="email" id="loginEmail" required placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••">
+        </div>
+        <div id="loginError" class="error-msg" style="display:none;"></div>
+        <button type="submit" class="btn btn-primary btn-block">登录</button>
+      </form>
+      <p class="auth-link">还没有账号？<a href="register.html">注册</a></p>
+      <hr>
+      <p class="auth-alt-label">或使用以下方式登录：</p>
+      <button id="githubLoginBtn" class="btn btn-outline btn-block">🐙 使用 GitHub 登录</button>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="auth.js"></script>
+</body>
+</html>

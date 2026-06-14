@@ -1,5 +1,9 @@
 // 量子弦之链 · 社区核心逻辑
 
+// 确保 supabase 客户端已就绪
+const supabase = window._supabase;
+
+
 // ====== 当前页面 ======
 const isIndex = document.getElementById('postsList');
 const isPostDetail = document.getElementById('postDetail');

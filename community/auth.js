@@ -1,5 +1,9 @@
 // 量子弦之链 · 社区认证模块
 
+// 确保 supabase 客户端已就绪
+const supabase = window._supabase;
+
+
 // ====== 检查登录状态 ======
 async function checkSession() {
   const { data: { session } } = await supabase.auth.getSession();

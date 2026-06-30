@@ -10,7 +10,8 @@ async function checkSession() {
   if (session) {
     const userDisplay = document.getElementById('userDisplay');
     if (userDisplay) {
-      userDisplay.textContent = session.user.user_metadata?.nickname || session.user.email;
+      const nickname = session.user.user_metadata?.nickname || session.user.email;
+      userDisplay.innerHTML = `<a href="profile.html?id=${session.user.id}" style="color:var(--accent);text-decoration:none;">👤 ${escapeHtml(nickname)}</a>`;
       userDisplay.style.display = 'inline';
     }
     const loginBtn = document.getElementById('loginBtn');

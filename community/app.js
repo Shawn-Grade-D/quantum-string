@@ -65,7 +65,7 @@ if (isIndex) {
         <h2 class="post-title">${escapeHtml(post.title)}</h2>
         <p class="post-excerpt">${escapeHtml(post.content.slice(0, 200))}${post.content.length > 200 ? '...' : ''}</p>
         <div class="post-meta">
-          <span class="post-author">👤 ${escapeHtml(post.author_name)}</span>
+          <span class="post-author">👤 <a href="profile.html?id=${post.author_id}" class="author-link" onclick="event.stopPropagation()">${escapeHtml(post.author_name)}</a></span>
           <span class="post-time">${timeAgo(post.created_at)}</span>
           <span class="post-likes">❤️ ${post.likes_count || 0}</span>
           ${post.tags && post.tags.length ? post.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('') : ''}
@@ -131,7 +131,7 @@ if (isPostDetail) {
       <article class="post-full">
         <h1>${escapeHtml(post.title)}</h1>
         <div class="post-meta">
-          <span>👤 ${escapeHtml(post.author_name)}</span>
+          <span>👤 <a href="profile.html?id=${post.author_id}" class="author-link">${escapeHtml(post.author_name)}</a></span>
           <span>🕐 ${new Date(post.created_at).toLocaleString('zh-CN')}</span>
           <span>❤️ <span id="likeCount">${post.likes_count || 0}</span></span>
           ${post.tags && post.tags.length ? post.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('') : ''}
@@ -216,7 +216,7 @@ if (isPostDetail) {
         html += `
           <div class="comment ${isPrivate ? 'comment-private' : ''}" id="comment-${c.id}" style="margin-left:${Math.min(depth, 5) * 24}px">
             <div class="comment-meta">
-              <strong>${escapeHtml(c.author_name)}</strong>
+              <strong><a href="profile.html?id=${c.author_id}" class="author-link">${escapeHtml(c.author_name)}</a></strong>
               <span>${timeAgo(c.created_at)}${privateLabel}</span>
             </div>
             <div class="comment-content">${escapeHtml(c.content).replace(/\n/g, '<br>')}</div>

@@ -217,6 +217,16 @@ body {
   align-items: center;
 }
 
+/* ====== 作者链接 ====== */
+.author-link {
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 500;
+}
+.author-link:hover {
+  color: var(--accent);
+}
+
 /* ====== 标签 ====== */
 .tag {
   color: var(--accent);

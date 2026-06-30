@@ -201,7 +201,8 @@ if (isPostDetail) {
     });
 
     async function renderCommentTree(nodes, depth) {
-      const { data: { session } } = sessionCache || {};
+      const sc = window.sessionCache || {};
+      const session = sc.session;
       const currentUserId = session?.user?.id;
       const maxDepth = 6;
       if (depth > maxDepth) return '';

@@ -126,6 +126,7 @@ if (isPostDetail) {
 
     document.title = `${post.title} · 量子弦之链`;
     document.getElementById('postDetailTitle').textContent = `${post.title} · 量子弦之链`;
+    window._postAuthorId = post.author_id;
 
     detail.innerHTML = `
       <article class="post-full">
@@ -185,6 +186,25 @@ if (isPostDetail) {
       return;
     }
 
+    // 构建作者映射（用于私密评论权限判断）
+    const parentAuthorMap = new Map();
+    comments.forEach(c => { parentAuthorMap.set(c.id, c.author_id); });
+    window._parentAuthorMap = parentAuthorMap;
+
+    // 获取帖主 ID（用于私密顶层评论可见性）
+    let postAuthorId = window._postAuthorId;
+    if (!postAuthorId) {
+      const { data: postData } = await supabase
+        .from('posts')
+        .select('author_id')
+        .eq('id', postId)
+        .single();
+      postAuthorId = postData?.author_id;
+      window._postAuthorId = postAuthorId;
+    }
+      return;
+    }
+
     // 构建嵌套评论树
     const commentMap = {};
     const roots = [];
@@ -210,6 +230,17 @@ if (isPostDetail) {
       let html = '';
       for (const c of nodes) {
         const isPrivate = c.visibility === 'private';
+
+        // 客户端过滤私密评论（双保险）
+        if (isPrivate) {
+          if (!currentUserId) continue;
+          const pmap = window._parentAuthorMap || new Map();
+          // 顶层私密评论：仅帖主和作者可见
+          if (!c.parent_id && currentUserId !== c.author_id && currentUserId !== window._postAuthorId) continue;
+          // 回复私密评论：仅父评论作者和被回复者可见
+          if (c.parent_id && currentUserId !== c.author_id && currentUserId !== pmap.get(c.parent_id)) continue;
+        }
+
         const privateLabel = isPrivate ? ' <span class="private-badge">🔒 私密</span>' : '';
         const canReply = depth < maxDepth;
 

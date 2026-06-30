@@ -450,6 +450,15 @@ hr {
   font-size: 0.85rem;
   margin-bottom: 12px;
 }
+.success-msg {
+  color: var(--success);
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--success);
+  border-radius: var(--radius);
+}
 .liked {
   background: var(--danger) !important;
   color: #fff !important;

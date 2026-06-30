@@ -112,6 +112,23 @@ window.saveProfile = async function() {
   loadProfile();
 };
 
+// ====== 修改密码 ======
+window.changePassword = async function() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+
+  const { error } = await supabase.auth.resetPasswordForEmail(session.user.email, {
+    redirectTo: window.location.origin + '/community/reset-password.html'
+  });
+
+  if (error) {
+    alert('发送重置邮件失败：' + error.message);
+    return;
+  }
+
+  alert('密码重置链接已发送至 ' + session.user.email + '，请检查邮箱（含垃圾箱）。');
+};
+
 // ====== 加载用户帖子 ======
 async function loadUserPosts(userId) {
   const list = document.getElementById('userPostsList');

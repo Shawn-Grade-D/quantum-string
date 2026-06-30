@@ -9,14 +9,18 @@ async function getUserProfile(userId) {
   if (window._cachedProfile && window._cachedProfile.id === userId) {
     return window._cachedProfile;
   }
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
-  if (!error && data) {
-    window._cachedProfile = data;
-    return data;
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    if (!error && data) {
+      window._cachedProfile = data;
+      return data;
+    }
+  } catch (e) {
+    console.warn('getUserProfile failed:', e);
   }
   return null;
 }
@@ -32,7 +36,12 @@ async function checkSession() {
 
   if (session) {
     const userId = session.user.id;
-    const profile = await getUserProfile(userId);
+    let profile = null;
+    try {
+      profile = await getUserProfile(userId);
+    } catch (e) {
+      console.warn('checkSession: getUserProfile failed', e);
+    }
     const nickname = profile?.nickname || session.user.user_metadata?.nickname || session.user.email;
     const avatarUrl = profile?.avatar_url || '';
 

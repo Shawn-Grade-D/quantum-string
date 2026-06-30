@@ -140,7 +140,7 @@ if (document.getElementById('loginForm')) {
       return;
     }
 
-    window.location.href = 'index.html';
+    window.location.href = '/community/';
   });
 }
 
@@ -150,7 +150,7 @@ if (document.getElementById('githubLoginBtn')) {
     await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: window.location.origin + '/community/index.html'
+        redirectTo: window.location.origin + '/community/'
       }
     });
   });

@@ -202,8 +202,6 @@ if (isPostDetail) {
       postAuthorId = postData?.author_id;
       window._postAuthorId = postAuthorId;
     }
-      return;
-    }
 
     // 构建嵌套评论树
     const commentMap = {};

@@ -33,6 +33,11 @@
   background: var(--card-bg);
   overflow: hidden;
   position: relative;
+  transition: border-color 0.2s, opacity 0.2s;
+}
+.avatar-wrapper[title]:hover {
+  border-color: var(--accent);
+  opacity: 0.85;
 }
 .avatar-img {
   width: 100%;
@@ -49,6 +54,14 @@
   background: var(--bg);
   color: var(--text-muted);
 }
+.upload-msg {
+  font-size: 0.8rem;
+  margin-top: 6px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.upload-error { color: var(--danger); }
+.upload-success { color: var(--success); }
 
 /* 用户信息 */
 .profile-info {

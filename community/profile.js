@@ -48,10 +48,16 @@ async function loadProfile() {
   document.getElementById('aboutJoinDate').textContent = new Date(profile.created_at).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
   document.getElementById('aboutWebsite').textContent = profile.website || '未设置';
 
-  // 检查是否是本人（显示编辑按钮）
+  // 检查是否是本人（显示编辑按钮 + 允许点击头像上传）
   const { data: { session } } = await supabase.auth.getSession();
   if (session && session.user.id === userId) {
     document.getElementById('profileActions').style.display = 'block';
+    const wrapper = document.getElementById('avatarWrapper');
+    wrapper.style.cursor = 'pointer';
+    wrapper.title = '点击更换头像';
+    wrapper.onclick = function() {
+      document.getElementById('avatarFileInput').click();
+    };
   }
 
   document.title = `${profile.nickname || '用户'} · 量子弦之链`;
@@ -69,7 +75,6 @@ window.editProfile = async function() {
 
   document.getElementById('editNickname').value = profile.nickname || '';
   document.getElementById('editBio').value = profile.bio || '';
-  document.getElementById('editAvatar').value = profile.avatar_url || '';
   document.getElementById('editWebsite').value = profile.website || '';
   document.getElementById('editModal').style.display = 'flex';
 };
@@ -93,7 +98,6 @@ window.saveProfile = async function() {
   const updates = {
     nickname,
     bio: document.getElementById('editBio').value.trim(),
-    avatar_url: document.getElementById('editAvatar').value.trim(),
     website: document.getElementById('editWebsite').value.trim(),
     updated_at: new Date().toISOString()
   };
@@ -127,6 +131,76 @@ window.changePassword = async function() {
   }
 
   alert('密码重置链接已发送至 ' + session.user.email + '，请检查邮箱（含垃圾箱）。');
+};
+
+// ====== 上传头像 ======
+window.uploadAvatar = async function() {
+  const input = document.getElementById('avatarFileInput');
+  const file = input.files[0];
+  if (!file) return;
+
+  // 类型校验
+  if (!file.type.startsWith('image/')) {
+    alert('请选择图片文件');
+    input.value = '';
+    return;
+  }
+
+  // 大小限制 2MB
+  if (file.size > 2 * 1024 * 1024) {
+    alert('图片不能超过 2MB');
+    input.value = '';
+    return;
+  }
+
+  const msg = document.getElementById('avatarUploadMsg');
+  msg.textContent = '⏳ 上传中...';
+  msg.style.display = 'block';
+  msg.className = 'upload-msg';
+
+  const { data: { session } } = await supabase.auth.getSession();
+  const userId = session.user.id;
+  const fileExt = file.name.split('.').pop();
+  const filePath = userId + '/' + Date.now() + '.' + fileExt;
+
+  // 上传到 User avatar 桶
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from('User avatar')
+    .upload(filePath, file, { upsert: true });
+
+  if (uploadError) {
+    msg.textContent = '上传失败：' + uploadError.message;
+    msg.className = 'upload-msg upload-error';
+    input.value = '';
+    return;
+  }
+
+  // 获取公开 URL
+  const { data: urlData } = supabase.storage.from('User avatar').getPublicUrl(filePath);
+  const publicUrl = urlData.publicUrl;
+
+  // 更新 profiles 表
+  const { error: updateError } = await supabase
+    .from('profiles')
+    .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+    .eq('id', userId);
+
+  if (updateError) {
+    msg.textContent = '保存失败：' + updateError.message;
+    msg.className = 'upload-msg upload-error';
+    input.value = '';
+    return;
+  }
+
+  msg.textContent = '✅ 头像已更新！';
+  msg.className = 'upload-msg upload-success';
+  input.value = '';
+
+  // 刷新头像
+  setTimeout(() => {
+    msg.style.display = 'none';
+    loadProfile();
+  }, 1000);
 };
 
 // ====== 加载用户帖子 ======

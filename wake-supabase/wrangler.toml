@@ -1,0 +1,11 @@
+name = "quantum-string-wake"
+main = "src/index.js"
+compatibility_date = "2026-06-14"
+
+# 定时触发：北京时间每天凌晨 4:00（避开高峰，也规避 DST 问题）
+[triggers]
+crons = ["0 20 * * *"]  # UTC 20:00 = 北京时间次日 04:00
+
+# 环境变量 - Supabase URL
+[vars]
+SUPABASE_URL = "https://nnyxnctxwjdtlyytvaee.supabase.co"

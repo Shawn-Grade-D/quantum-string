@@ -35,7 +35,13 @@
       <h3>💬 评论</h3>
       <div id="commentForm" style="display:none;">
         <textarea id="commentContent" rows="3" placeholder="写下你的想法..." required></textarea>
-        <button class="btn btn-primary" onclick="submitComment()">发表评论</button>
+        <div class="comment-form-actions">
+          <select id="commentVisibility" class="visibility-select">
+            <option value="public">🌐 公开</option>
+            <option value="private">🔒 仅帖主可见</option>
+          </select>
+          <button class="btn btn-primary" onclick="submitComment()">发表评论</button>
+        </div>
       </div>
       <div id="commentsList" class="comments-list"></div>
     </div>

@@ -185,29 +185,80 @@ if (isPostDetail) {
       return;
     }
 
-    list.innerHTML = comments.map(c => `
-      <div class="comment">
-        <div class="comment-meta">
-          <strong>${escapeHtml(c.author_name)}</strong>
-          <span>${timeAgo(c.created_at)}</span>
-        </div>
-        <div class="comment-content">${escapeHtml(c.content).replace(/\n/g, '<br>')}</div>
-      </div>
-    `).join('');
+    // 构建嵌套评论树
+    const commentMap = {};
+    const roots = [];
+    comments.forEach(c => {
+      c.children = [];
+      commentMap[c.id] = c;
+    });
+    comments.forEach(c => {
+      if (c.parent_id && commentMap[c.parent_id]) {
+        commentMap[c.parent_id].children.push(c);
+      } else {
+        roots.push(c);
+      }
+    });
+
+    async function renderCommentTree(nodes, depth) {
+      const { data: { session } } = sessionCache || {};
+      const currentUserId = session?.user?.id;
+      const maxDepth = 6;
+      if (depth > maxDepth) return '';
+
+      let html = '';
+      for (const c of nodes) {
+        const isPrivate = c.visibility === 'private';
+        const privateLabel = isPrivate ? ' <span class="private-badge">🔒 私密</span>' : '';
+        const canReply = depth < maxDepth;
+
+        html += `
+          <div class="comment ${isPrivate ? 'comment-private' : ''}" id="comment-${c.id}" style="margin-left:${Math.min(depth, 5) * 24}px">
+            <div class="comment-meta">
+              <strong>${escapeHtml(c.author_name)}</strong>
+              <span>${timeAgo(c.created_at)}${privateLabel}</span>
+            </div>
+            <div class="comment-content">${escapeHtml(c.content).replace(/\n/g, '<br>')}</div>
+            <div class="comment-actions">
+              ${canReply ? `<button class="btn-reply" onclick="showReplyForm(${c.id}, '${escapeHtml(c.author_name)}')">💬 回复</button>` : ''}
+              ${currentUserId === c.author_id ? `<button class="btn-delete-comment" onclick="deleteComment(${c.id}, ${postId})">🗑️</button>` : ''}
+            </div>
+            <div id="replyForm-${c.id}" class="reply-form" style="display:none;"></div>
+            ${c.children.length ? await renderCommentTree(c.children, depth + 1) : ''}
+          </div>
+        `;
+      }
+      return html;
+    }
+
+    // 缓存 session 供 renderCommentTree 使用
+    const { data } = await supabase.auth.getSession();
+    window.sessionCache = data;
+
+    list.innerHTML = await renderCommentTree(roots, 0);
   }
 
-  // ====== 提交评论 ======
-  window.submitComment = async function() {
+  // ====== 提交评论（支持回复 + 可见性） ======
+  window.submitComment = async function(parentId) {
     const params = new URLSearchParams(window.location.search);
     const postId = params.get('id');
-    const content = document.getElementById('commentContent').value.trim();
     const { data: { session } } = await supabase.auth.getSession();
 
-    if (!content || !session) return;
+    if (!session) { alert('请先登录'); return; }
+
+    const contentId = parentId ? `replyContent-${parentId}` : 'commentContent';
+    const visibilityId = parentId ? `replyVisibility-${parentId}` : 'commentVisibility';
+    const content = document.getElementById(contentId).value.trim();
+    const visibilityEl = document.getElementById(visibilityId);
+    const visibility = visibilityEl ? visibilityEl.value : 'public';
+
+    if (!content) return;
 
     const { error } = await supabase.from('comments').insert({
       post_id: postId,
+      parent_id: parentId || null,
       content,
+      visibility,
       author_id: session.user.id,
       author_name: session.user.user_metadata?.nickname || session.user.email
     });
@@ -217,7 +268,35 @@ if (isPostDetail) {
       return;
     }
 
-    document.getElementById('commentContent').value = '';
+    document.getElementById(contentId).value = '';
+    loadComments(postId);
+  };
+
+  // ====== 显示回复表单 ======
+  window.showReplyForm = function(parentId, authorName) {
+    const container = document.getElementById(`replyForm-${parentId}`);
+    if (container.style.display === 'block') {
+      container.style.display = 'none';
+      return;
+    }
+    container.style.display = 'block';
+    container.innerHTML = `
+      <textarea id="replyContent-${parentId}" rows="2" placeholder="回复 ${escapeHtml(authorName)}..."></textarea>
+      <div class="reply-actions">
+        <select id="replyVisibility-${parentId}" class="visibility-select">
+          <option value="public">🌐 公开</option>
+          <option value="private">🔒 仅对方可见</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="submitComment(${parentId})">发送</button>
+        <button class="btn btn-outline btn-sm" onclick="document.getElementById('replyForm-${parentId}').style.display='none'">取消</button>
+      </div>
+    `;
+  };
+
+  // ====== 删除评论 ======
+  window.deleteComment = async function(commentId, postId) {
+    if (!confirm('确定要删除这条评论吗？')) return;
+    await supabase.from('comments').delete().eq('id', commentId);
     loadComments(postId);
   };
 

@@ -255,9 +255,18 @@ body {
   resize: vertical;
   margin-bottom: 8px;
 }
+.comment-form-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* 嵌套评论 */
 .comment {
-  padding: 12px 0;
+  padding: 10px 0;
   border-bottom: 1px solid var(--border);
+  border-left: 2px solid transparent;
+  padding-left: 12px;
 }
 .comment:last-child { border-bottom: none; }
 .comment-meta {
@@ -266,8 +275,91 @@ body {
   font-size: 0.85rem;
   color: var(--text-muted);
   margin-bottom: 4px;
+  flex-wrap: wrap;
+  align-items: center;
 }
-.comment-content { font-size: 0.9rem; }
+.comment-content { font-size: 0.9rem; margin-bottom: 6px; }
+.comment-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* 私密评论标识 */
+.comment-private {
+  border-left: 2px solid var(--accent);
+  background: var(--card-bg);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 10px 12px;
+}
+.private-badge {
+  font-size: 0.75rem;
+  color: var(--accent);
+}
+
+/* 回复按钮 */
+.btn-reply {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.btn-reply:hover { color: var(--accent); }
+.btn-delete-comment {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+.btn-delete-comment:hover { color: var(--danger); }
+
+/* 回复表单 */
+.reply-form {
+  margin: 8px 0 4px;
+  padding: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.reply-form textarea {
+  width: 100%;
+  padding: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+  margin-bottom: 6px;
+}
+.reply-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* 可见性选择器 */
+.visibility-select {
+  padding: 4px 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* 小按钮 */
+.btn-sm {
+  padding: 4px 12px;
+  font-size: 0.8rem;
+}
 
 /* ====== 认证页面 ====== */
 .auth-page {

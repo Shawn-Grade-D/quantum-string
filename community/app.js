@@ -241,34 +241,48 @@ if (isPostDetail) {
   // ====== 提交评论（支持回复 + 可见性） ======
   window.submitComment = async function(parentId) {
     const params = new URLSearchParams(window.location.search);
-    const postId = params.get('id');
+    const postIdStr = params.get('id');
+    const postId = parseInt(postIdStr, 10);
     const { data: { session } } = await supabase.auth.getSession();
 
     if (!session) { alert('请先登录'); return; }
 
     const contentId = parentId ? `replyContent-${parentId}` : 'commentContent';
     const visibilityId = parentId ? `replyVisibility-${parentId}` : 'commentVisibility';
-    const content = document.getElementById(contentId).value.trim();
+    const contentEl = document.getElementById(contentId);
     const visibilityEl = document.getElementById(visibilityId);
+
+    if (!contentEl) {
+      console.error('找不到评论输入框:', contentId);
+      return;
+    }
+
+    const content = contentEl.value.trim();
     const visibility = visibilityEl ? visibilityEl.value : 'public';
 
     if (!content) return;
 
-    const { error } = await supabase.from('comments').insert({
+    const insertData = {
       post_id: postId,
-      parent_id: parentId || null,
       content,
-      visibility,
       author_id: session.user.id,
-      author_name: session.user.user_metadata?.nickname || session.user.email
-    });
+      author_name: session.user.user_metadata?.nickname || session.user.email || '匿名'
+    };
+
+    if (parentId) insertData.parent_id = parseInt(parentId, 10);
+    if (visibility) insertData.visibility = visibility;
+
+    console.log('提交评论:', insertData);
+
+    const { error } = await supabase.from('comments').insert(insertData);
 
     if (error) {
+      console.error('评论失败:', error);
       alert('评论失败：' + error.message);
       return;
     }
 
-    document.getElementById(contentId).value = '';
+    contentEl.value = '';
     loadComments(postId);
   };
 

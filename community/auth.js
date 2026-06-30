@@ -1,32 +1,76 @@
 // 量子弦之链 · 社区认证模块
 
-// 使用全局 supabaseClient
 var supabase = window.supabaseClient;
 
+// ====== 缓存用户 profile ======
+window._cachedProfile = null;
+
+async function getUserProfile(userId) {
+  if (window._cachedProfile && window._cachedProfile.id === userId) {
+    return window._cachedProfile;
+  }
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+  if (!error && data) {
+    window._cachedProfile = data;
+    return data;
+  }
+  return null;
+}
 
 // ====== 检查登录状态 ======
 async function checkSession() {
   const { data: { session } } = await supabase.auth.getSession();
+
+  const loginBtn = document.getElementById('loginBtn');
+  const registerBtn = document.getElementById('registerBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const userDisplay = document.getElementById('userDisplay');
+
   if (session) {
-    const userDisplay = document.getElementById('userDisplay');
+    const userId = session.user.id;
+    const profile = await getUserProfile(userId);
+    const nickname = profile?.nickname || session.user.user_metadata?.nickname || session.user.email;
+    const avatarUrl = profile?.avatar_url || '';
+
+    // GitHub 风格：头像 + 昵称 胶囊
     if (userDisplay) {
-      const nickname = session.user.user_metadata?.nickname || session.user.email;
-      userDisplay.innerHTML = `<a href="profile.html?id=${session.user.id}" style="color:var(--accent);text-decoration:none;">👤 ${escapeHtml(nickname)}</a>`;
+      userDisplay.innerHTML = `
+        <a href="profile.html?id=${userId}" class="user-capsule">
+          <span class="user-avatar-xs">${avatarUrl ? `<img src="${escapeHtml(avatarUrl)}" class="avatar-xs-img" alt="">` : '👤'}</span>
+          <span class="user-name-xs">${escapeHtml(nickname)}</span>
+        </a>
+      `;
       userDisplay.style.display = 'inline';
     }
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
+
     if (loginBtn) loginBtn.style.display = 'none';
     if (registerBtn) registerBtn.style.display = 'none';
-    if (logoutBtn) logoutBtn.style.display = 'inline';
+    if (logoutBtn) {
+      logoutBtn.innerHTML = '<span class="logout-icon">⏻</span>';
+      logoutBtn.title = '退出登录';
+      logoutBtn.style.display = 'inline';
+    }
+  } else {
+    if (userDisplay) {
+      userDisplay.style.display = 'none';
+      userDisplay.innerHTML = '';
+    }
+    if (loginBtn) loginBtn.style.display = 'inline';
+    if (registerBtn) registerBtn.style.display = 'inline';
+    if (logoutBtn) logoutBtn.style.display = 'none';
   }
+
   return session;
 }
 
 // ====== 退出登录 ======
 async function logout() {
   await supabase.auth.signOut();
+  window._cachedProfile = null;
   window.location.href = 'index.html';
 }
 
@@ -105,3 +149,10 @@ if (document.getElementById('githubLoginBtn')) {
 
 // ====== 页面加载时检查登录状态 ======
 document.addEventListener('DOMContentLoaded', checkSession);
+
+// ====== 工具 ======
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}

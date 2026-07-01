@@ -586,6 +586,7 @@ hr {
   border-color: #e3b341;
   color: #e3b341;
 }
+.count-inline { font-size: 0.8rem; }
 
 /* 评论投票按钮 */
 .btn-vote {

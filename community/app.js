@@ -258,13 +258,12 @@ if (isPostDetail) {
         <div class="post-meta">
           <span>👤 <a href="profile.html?id=${post.author_id}" class="author-link">${escapeHtml(post.author_name)}</a></span>
           <span>🕐 ${new Date(post.created_at).toLocaleString('zh-CN')}</span>
-          <span>❤️ <span id="likeCount">${post.likes_count || 0}</span></span>
           ${post.tags && post.tags.length ? post.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('') : ''}
         </div>
         <div class="post-content">${renderMarkdownImages(post.content)}</div>
         <div class="post-footer-actions">
-          <button id="likeBtn" class="btn btn-outline btn-action" onclick="toggleLike(${post.id})">❤️ <span class="action-label">点赞</span> <span id="likeCount">${post.likes_count || 0}</span></button>
-          <button id="bookmarkBtn" class="btn btn-outline btn-action" onclick="toggleBookmark(${post.id})">⭐ <span class="action-label">收藏</span> <span id="bookmarkCount">${post.bookmarks_count || 0}</span></button>
+          <button id="likeBtn" class="btn btn-outline btn-action" onclick="toggleLike(${post.id})">❤️ <span class="action-label">点赞</span> <span class="count-inline">${post.likes_count || 0}</span></button>
+          <button id="bookmarkBtn" class="btn btn-outline btn-action" onclick="toggleBookmark(${post.id})">⭐ <span class="action-label">收藏</span> <span class="count-inline">${post.bookmarks_count || 0}</span></button>
           <button class="btn btn-outline btn-action" onclick="sharePost(${post.id}, '${escapeHtml(post.title).replace(/'/g, "\\'")}')">🔗 <span class="action-label">转发</span></button>
           <button id="deletePostBtn" class="btn btn-danger" style="display:none;" onclick="deletePost(${post.id})">🗑️ 删除</button>
           <button class="btn btn-outline btn-report" onclick="reportContent('post', ${post.id}, '${escapeHtml(post.title).replace(/'/g, "\\'")}')">🚩 举报</button>
@@ -288,9 +287,9 @@ if (isPostDetail) {
         .maybeSingle();
 
       if (like) {
-        const likeBtn = document.getElementById('likeBtn');
-        likeBtn.classList.add('liked');
-        likeBtn.innerHTML = '❤️ <span class="action-label">已赞</span> <span id="likeCount">${post.likes_count || 0}</span>';
+        const btn = document.getElementById('likeBtn');
+        btn.classList.add('liked');
+        btn.innerHTML = `❤️ <span class="action-label">已赞</span> <span class="count-inline">${post.likes_count || 0}</span>`;
       }
 
       // 检查收藏状态
@@ -302,9 +301,9 @@ if (isPostDetail) {
         .maybeSingle();
 
       if (bookmark) {
-        const bmBtn = document.getElementById('bookmarkBtn');
-        bmBtn.classList.add('bookmarked');
-        bmBtn.innerHTML = '⭐ <span class="action-label">已收藏</span> <span id="bookmarkCount">${post.bookmarks_count || 0}</span>';
+        const btn = document.getElementById('bookmarkBtn');
+        btn.classList.add('bookmarked');
+        btn.innerHTML = `⭐ <span class="action-label">已收藏</span> <span class="count-inline">${post.bookmarks_count || 0}</span>`;
       }
     }
 

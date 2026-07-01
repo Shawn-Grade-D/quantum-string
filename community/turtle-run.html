@@ -82,9 +82,16 @@
 <script>
 // ====== 乌龟数据 ======
 const turtles = [
-  { name: '安安', type: '黄缘', color: '#8B6914', shell: '#C4922E', desc: '雌性安徽黄缘，稳重厚实' },
-  { name: '布布', type: '黄缘', color: '#A0781E', shell: '#D4A43C', desc: '雄性安徽黄缘，小巧灵活' },
-  { name: 'B5',   type: '巴西', color: '#2E7D32', shell: '#4CAF50', desc: '第一只龟，老大哥' },
+  { name: '安安', type: '黄缘', color: '#8B6914', shell: '#C4922E', desc: '雌性安徽黄缘，沉稳大气' },
+  { name: '乐乐', type: '黄缘', color: '#A0781E', shell: '#D4A43C', desc: '雄性小黄缘，活泼好动' },
+  { name: '布布', type: '安布闭壳', color: '#5D4037', shell: '#795548', desc: '安布闭壳龟，内敛低调' },
+  { name: '西瓜', type: '火焰', color: '#D32F2F', shell: '#FF5722', desc: '火焰龟，热情似火' },
+  { name: '招财', type: '南石金钱', color: '#F9A825', shell: '#FFC107', desc: '招财进宝，财源滚滚' },
+  { name: '钟离', type: '黄耳', color: '#33691E', shell: '#689F38', desc: '黄耳龟，优雅从容' },
+  { name: 'B5',   type: '巴西', color: '#1B5E20', shell: '#4CAF50', desc: '第一只龟，老大哥' },
+  { name: '细佬', type: '地图', color: '#37474F', shell: '#607D8B', desc: '地图龟，纹路精妙' },
+  { name: '行秋', type: '草龟', color: '#3E2723', shell: '#5D4037', desc: '草龟，质朴敦厚' },
+  { name: '小宝', type: '麝香', color: '#424242', shell: '#757575', desc: '麝香龟，小巧精致' },
 ];
 
 let chosenIdx = 0;
@@ -101,15 +108,15 @@ const H = Math.min(300, W * 0.375);
 canvas.width = W; canvas.height = H;
 
 // ===== 游戏状态 =====
-let turtle = { x: 80, y: 0, vy: 0, w: 36, h: 24, jumping: false, ducking: false };
+let turtle = { x: 80, y: 0, vy: 0, w: 32, h: 22, jumping: false, ducking: false };
 let obstacles = [];
 let clouds = [];
 let groundOffset = 0;
-let speed = 4;
+let speed = 2.5;
 let frame = 0;
 let gameSpeed = 1;
-const GRAVITY = 0.65;
-const JUMP_FORCE = -10;
+const GRAVITY = 0.55;
+const JUMP_FORCE = -9;
 const GROUND_Y = H - 42;
 
 turtle.y = GROUND_Y - turtle.h;
@@ -212,7 +219,7 @@ function drawSky() {
 
 // ===== 游戏逻辑 =====
 function spawnObstacle() {
-  if (obstacles.length > 0 && obstacles[obstacles.length - 1].x > W - 280) return;
+  if (obstacles.length > 0 && obstacles[obstacles.length - 1].x > W - 400) return;
   // 有时两个一组
   const count = Math.random() < 0.2 ? 2 : 1;
   for (let i = 0; i < count; i++) {
@@ -266,13 +273,14 @@ function update() {
   score += 1;
   document.getElementById('score').textContent = score;
 
-  // 加速
-  if (score > 0 && score % 500 === 0) {
-    speed = Math.min(speed + 0.8, 14);
+  // 渐进加速：每100分提速0.15，上限12
+  if (score > 0 && score % 100 === 0) {
+    speed = Math.min(speed + 0.15, 12);
   }
 
-  // 生成障碍
-  if (frame % Math.max(30, Math.floor(90 - speed * 4)) === 0) {
+  // 生成障碍：速度越快，间隔越短
+  const spawnInterval = Math.max(40, Math.floor(120 - speed * 5));
+  if (frame % spawnInterval === 0) {
     spawnObstacle();
   }
 
@@ -313,7 +321,7 @@ function endGame() {
 
 function restartGame() {
   score = 0;
-  speed = 4;
+  speed = 2.5;
   turtle.y = GROUND_Y - turtle.h;
   turtle.vy = 0;
   turtle.jumping = false;
@@ -383,3 +391,4 @@ gameLoop();
 </script>
 </body>
 </html>
+

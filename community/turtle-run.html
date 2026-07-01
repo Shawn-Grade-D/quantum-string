@@ -278,9 +278,9 @@ function update() {
   score += 1;
   document.getElementById('score').textContent = score;
 
-  // 渐进加速：每100分提速0.15，上限12
-  if (score > 0 && score % 100 === 0) {
-    speed = Math.min(speed + 0.15, 12);
+  // 渐进加速：每1000分提速0.05，上限12
+  if (score > 0 && score % 1000 === 0) {
+    speed = Math.min(speed + 0.05, 12);
   }
 
   // 生成障碍：速度越快，间隔越短

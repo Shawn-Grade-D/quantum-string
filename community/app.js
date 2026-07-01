@@ -262,8 +262,8 @@ if (isPostDetail) {
         </div>
         <div class="post-content">${renderMarkdownImages(post.content)}</div>
         <div class="post-footer-actions">
-          <button id="likeBtn" class="btn btn-outline btn-action" onclick="toggleLike(${post.id})">❤️ <span class="action-label">点赞</span> <span class="count-inline">${post.likes_count || 0}</span></button>
-          <button id="bookmarkBtn" class="btn btn-outline btn-action" onclick="toggleBookmark(${post.id})">⭐ <span class="action-label">收藏</span> <span class="count-inline">${post.bookmarks_count || 0}</span></button>
+          <button id="likeBtn" class="btn btn-outline btn-action" onclick="toggleLike(${post.id})">❤️ <span class="action-label">点赞</span> <span class="count-inline">...</span></button>
+          <button id="bookmarkBtn" class="btn btn-outline btn-action" onclick="toggleBookmark(${post.id})">⭐ <span class="action-label">收藏</span> <span class="count-inline">...</span></button>
           <button class="btn btn-outline btn-action" onclick="sharePost(${post.id}, '${escapeHtml(post.title).replace(/'/g, "\\'")}')">🔗 <span class="action-label">转发</span></button>
           <button id="deletePostBtn" class="btn btn-danger" style="display:none;" onclick="deletePost(${post.id})">🗑️ 删除</button>
           <button class="btn btn-outline btn-report" onclick="reportContent('post', ${post.id}, '${escapeHtml(post.title).replace(/'/g, "\\'")}')">🚩 举报</button>
@@ -277,40 +277,13 @@ if (isPostDetail) {
       document.getElementById('deletePostBtn').style.display = 'inline';
     }
 
-    // 检查点赞状态
-    if (session) {
-      const { data: like } = await supabase
-        .from('likes')
-        .select('*')
-        .eq('post_id', postId)
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (like) {
-        const btn = document.getElementById('likeBtn');
-        btn.classList.add('liked');
-        btn.innerHTML = `❤️ <span class="action-label">已赞</span> <span class="count-inline">${post.likes_count || 0}</span>`;
-      }
-
-      // 检查收藏状态
-      const { data: bookmark } = await supabase
-        .from('bookmarks')
-        .select('*')
-        .eq('post_id', postId)
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (bookmark) {
-        const btn = document.getElementById('bookmarkBtn');
-        btn.classList.add('bookmarked');
-        btn.innerHTML = `⭐ <span class="action-label">已收藏</span> <span class="count-inline">${post.bookmarks_count || 0}</span>`;
-      }
-    }
-
     // 显示评论表单
     if (session) {
       document.getElementById('commentForm').style.display = 'block';
     }
+
+    // 异步刷新点赞和收藏的实时计数（RLS 公开）
+    refreshPostCounts(postId);
 
     // 加载评论
     loadComments(postId);

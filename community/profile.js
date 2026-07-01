@@ -65,6 +65,7 @@ async function loadProfile() {
   // 加载帖子和评论
   loadUserPosts(userId);
   loadUserComments(userId);
+  loadUserBookmarks(userId);
 }
 
 // ====== 编辑资料 ======
@@ -267,6 +268,68 @@ async function loadUserComments(userId) {
       <div class="comment-content">${escapeHtml(c.content)}</div>
     </div>
   `).join('');
+}
+
+// ====== 加载用户收藏 ======
+async function loadUserBookmarks(userId) {
+  const list = document.getElementById('userBookmarksList');
+
+  // 检查当前登录用户是否是该主页的主人
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session || session.user.id !== userId) {
+    list.innerHTML = '<div class="empty-state">🔒 收藏内容仅本人可见</div>';
+    return;
+  }
+
+  const { data: bookmarks, error } = await supabase
+    .from('bookmarks')
+    .select('post_id, created_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) {
+    list.innerHTML = '<div class="error-msg">加载失败</div>';
+    return;
+  }
+
+  if (!bookmarks || bookmarks.length === 0) {
+    list.innerHTML = '<div class="empty-state">还没有收藏帖子</div>';
+    return;
+  }
+
+  // 批量查帖子详情
+  const postIds = bookmarks.map(b => b.post_id);
+  const { data: posts, error: postError } = await supabase
+    .from('posts')
+    .select('*')
+    .in('id', postIds);
+
+  if (postError) {
+    list.innerHTML = '<div class="error-msg">加载失败</div>';
+    return;
+  }
+
+  // 按收藏时间排序
+  const postMap = {};
+  (posts || []).forEach(p => { postMap[p.id] = p; });
+
+  list.innerHTML = bookmarks.map(b => {
+    const post = postMap[b.post_id];
+    if (!post) return '';
+    return `
+    <a href="post.html?id=${post.id}" class="post-card">
+      <h2 class="post-title">${escapeHtml(post.title)}</h2>
+      <p class="post-excerpt">${escapeHtml(post.content.slice(0, 150))}${post.content.length > 150 ? '...' : ''}</p>
+      <div class="post-meta">
+        <span>👤 ${escapeHtml(post.author_name)}</span>
+        <span>🕐 ${timeAgo(post.created_at)}</span>
+        <span>⭐ ${new Date(b.created_at).toLocaleDateString('zh-CN')} 收藏</span>
+        ${post.tags && post.tags.length ? post.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('') : ''}
+      </div>
+    </a>
+  `;
+  }).join('');
 }
 
 // ====== 标签页切换 ======

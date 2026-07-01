@@ -82,6 +82,7 @@
     <div class="profile-tabs">
       <button class="tab-btn active" data-tab="posts">📝 帖子</button>
       <button class="tab-btn" data-tab="comments">💬 评论</button>
+      <button class="tab-btn" data-tab="bookmarks">⭐ 收藏</button>
       <button class="tab-btn" data-tab="about">📋 关于</button>
     </div>
 
@@ -95,6 +96,13 @@
     <!-- 评论列表 -->
     <div id="tab-comments" class="tab-content">
       <div id="userCommentsList" class="comments-list">
+        <div class="loading">加载中...</div>
+      </div>
+    </div>
+
+    <!-- 收藏列表 -->
+    <div id="tab-bookmarks" class="tab-content">
+      <div id="userBookmarksList" class="posts-list">
         <div class="loading">加载中...</div>
       </div>
     </div>

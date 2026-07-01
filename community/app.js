@@ -555,8 +555,8 @@ if (isPostDetail) {
       await supabase.from('likes').insert({ post_id: postId, user_id: session.user.id });
     }
 
-    // 刷新页面数据
-    loadPostDetail();
+    // 仅更新计数，不重刷整页
+    await refreshPostCounts(postId);
   };
 
   // ====== 收藏 ======
@@ -580,8 +580,32 @@ if (isPostDetail) {
       await supabase.from('bookmarks').insert({ post_id: postId, user_id: session.user.id });
     }
 
-    loadPostDetail();
+    await refreshPostCounts(postId);
   };
+
+  // ====== 刷新帖子按钮上的计数（不刷新整页） ======
+  async function refreshPostCounts(postId) {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    const [{ count: likeCount }, { count: bookmarkCount }, likeRow, bookmarkRow] = await Promise.all([
+      supabase.from('likes').select('*', { count: 'exact', head: true }).eq('post_id', postId),
+      supabase.from('bookmarks').select('*', { count: 'exact', head: true }).eq('post_id', postId),
+      session ? supabase.from('likes').select('*').eq('post_id', postId).eq('user_id', session.user.id).maybeSingle() : Promise.resolve(null),
+      session ? supabase.from('bookmarks').select('*').eq('post_id', postId).eq('user_id', session.user.id).maybeSingle() : Promise.resolve(null)
+    ]);
+
+    const likeBtn = document.getElementById('likeBtn');
+    if (likeBtn) {
+      likeBtn.classList.toggle('liked', !!likeRow?.data);
+      likeBtn.innerHTML = `❤️ <span class="action-label">${likeRow?.data ? '已赞' : '点赞'}</span> <span class="count-inline">${likeCount || 0}</span>`;
+    }
+
+    const bmBtn = document.getElementById('bookmarkBtn');
+    if (bmBtn) {
+      bmBtn.classList.toggle('bookmarked', !!bookmarkRow?.data);
+      bmBtn.innerHTML = `⭐ <span class="action-label">${bookmarkRow?.data ? '已收藏' : '收藏'}</span> <span class="count-inline">${bookmarkCount || 0}</span>`;
+    }
+  }
 
   // ====== 转发（复制链接） ======
   window.sharePost = function(postId, title) {

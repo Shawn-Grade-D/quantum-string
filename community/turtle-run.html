@@ -47,13 +47,19 @@
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%,-50%);
       text-align: center; z-index: 10;
+      max-width: 700px;
     }
     #turtleSelect h2 {
-      color: #58a6ff; font-size: 24px; margin-bottom: 20px;
+      color: #58a6ff; font-size: 24px; margin-bottom: 16px;
+    }
+    #turtleOptions {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 12px;
     }
     .turtle-option {
-      display: inline-block; margin: 0 12px; cursor: pointer;
+      cursor: pointer;
       text-align: center; transition: transform 0.15s;
+      width: 90px; padding: 6px;
     }
     .turtle-option:hover { transform: scale(1.1); }
     .turtle-option .avatar {
@@ -103,8 +109,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // 响应式画布
-const W = Math.min(800, window.innerWidth - 8);
-const H = Math.min(300, W * 0.375);
+const W = Math.min(900, window.innerWidth - 8);
+const H = Math.min(380, W * 0.42);
 canvas.width = W; canvas.height = H;
 
 // ===== 游戏状态 =====
@@ -112,11 +118,11 @@ let turtle = { x: 80, y: 0, vy: 0, w: 32, h: 22, jumping: false, ducking: false 
 let obstacles = [];
 let clouds = [];
 let groundOffset = 0;
-let speed = 2.5;
+let speed = 1.8;
 let frame = 0;
 let gameSpeed = 1;
-const GRAVITY = 0.55;
-const JUMP_FORCE = -9;
+const GRAVITY = 0.35;
+const JUMP_FORCE = -8;
 const GROUND_Y = H - 42;
 
 turtle.y = GROUND_Y - turtle.h;
@@ -321,7 +327,7 @@ function endGame() {
 
 function restartGame() {
   score = 0;
-  speed = 2.5;
+  speed = 1.8;
   turtle.y = GROUND_Y - turtle.h;
   turtle.vy = 0;
   turtle.jumping = false;

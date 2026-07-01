@@ -179,7 +179,7 @@ function drawTurtle(x, y, w, h, ducking) {
 }
 
 function drawObstacle(obs) {
-  // 仙人掌（墨西哥风，乌龟怕扎）
+  // 仙人掌本体
   ctx.fillStyle = '#2E7D32';
   ctx.fillRect(obs.x + obs.w * 0.35, obs.y, obs.w * 0.3, obs.h * 0.6);
   ctx.fillRect(obs.x + obs.w * 0.1, obs.y + obs.h * 0.15, obs.w * 0.25, obs.h * 0.45);
@@ -192,6 +192,12 @@ function drawObstacle(obs) {
   // 花
   ctx.fillStyle = '#E91E63';
   ctx.beginPath(); ctx.arc(obs.x + obs.w * 0.5, obs.y + 4, 3, 0, Math.PI * 2); ctx.fill();
+  // 空中标志：小翅膀
+  if (obs.floating) {
+    ctx.fillStyle = '#FFD54F';
+    ctx.fillRect(obs.x - 4, obs.y + obs.h * 0.35, 6, 3);
+    ctx.fillRect(obs.x + obs.w - 2, obs.y + obs.h * 0.35, 6, 3);
+  }
 }
 
 function drawGround() {
@@ -224,16 +230,20 @@ function drawSky() {
 
 // ===== 游戏逻辑 =====
 function spawnObstacle() {
-  if (obstacles.length > 0 && obstacles[obstacles.length - 1].x > W - 400) return;
-  // 有时两个一组
-  const count = Math.random() < 0.2 ? 2 : 1;
+  if (obstacles.length > 0 && obstacles[obstacles.length - 1].x > W - 420) return;
+  const count = Math.random() < 0.25 ? 2 : 1;
   for (let i = 0; i < count; i++) {
-    const h = 28 + Math.random() * 22;
+    const h = 24 + Math.random() * 22;
+    // 70% 在地面，30% 在空中漂浮（仙人掌鸟）
+    const floating = Math.random() < 0.3;
+    const groundY = GROUND_Y - h;
+    const airY = groundY - (40 + Math.random() * 80);
     obstacles.push({
-      x: W + i * 60,
-      y: GROUND_Y - h,
-      w: 24 + Math.random() * 10,
+      x: W + i * 70,
+      y: floating ? Math.max(20, airY) : groundY,
+      w: 22 + Math.random() * 12,
       h: h,
+      floating: floating,
     });
   }
 }
@@ -241,12 +251,12 @@ function spawnObstacle() {
 function checkCollision(obs) {
   const tx = turtle.x + 6;
   const tw = turtle.w - 12;
-  const ty = turtle.y + (turtle.ducking ? turtle.h * 0.4 : 4);
-  const th = turtle.ducking ? turtle.h * 0.55 : turtle.h - 8;
+  const ty = turtle.y + (turtle.ducking ? turtle.h * 0.4 : 2);
+  const th = turtle.ducking ? turtle.h * 0.55 : turtle.h - 4;
   const ox = obs.x + 2;
   const ow = obs.w - 4;
-  const oy = obs.y + 4;
-  const oh = obs.h - 8;
+  const oy = obs.y + 2;
+  const oh = obs.h - 4;
   return tx < ox + ow && tx + tw > ox && ty < oy + oh && ty + th > oy;
 }
 

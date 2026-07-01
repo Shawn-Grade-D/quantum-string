@@ -47,8 +47,8 @@
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%,-50%);
       text-align: center; z-index: 10;
-      max-width: 700px;
-    }
+      max-width: 750px; max-height: 90%;
+      overflow-y: auto;
     #turtleSelect h2 {
       color: #58a6ff; font-size: 24px; margin-bottom: 16px;
     }
@@ -109,8 +109,8 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // 响应式画布
-const W = Math.min(900, window.innerWidth - 8);
-const H = Math.min(380, W * 0.42);
+const W = Math.min(1000, window.innerWidth - 8);
+const H = Math.min(480, W * 0.48);
 canvas.width = W; canvas.height = H;
 
 // ===== 游戏状态 =====
@@ -121,8 +121,8 @@ let groundOffset = 0;
 let speed = 1.8;
 let frame = 0;
 let gameSpeed = 1;
-const GRAVITY = 0.35;
-const JUMP_FORCE = -8;
+const GRAVITY = 0.22;
+const JUMP_FORCE = -7.5;
 const GROUND_Y = H - 42;
 
 turtle.y = GROUND_Y - turtle.h;

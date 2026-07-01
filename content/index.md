@@ -5,6 +5,8 @@ description: Quantum String — 基于量子通信、弦理论与区块链技术
 
 # 量子弦之链 · Quantum String
 
+<p align="center"><img src="/static/logo-horizontal-v2.png" alt="量子弦之链" width="600" style="max-width:100%;height:auto;"></p>
+
 一个以量子通信为信道、弦理论为认知框架、区块链为信任载体的思想记录站。
 
 ---

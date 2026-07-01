@@ -167,7 +167,13 @@ body {
 /* ====== 社区头部 ====== */
 .community-header {
   text-align: center;
-  padding: 40px 0 24px;
+  padding: 36px 0 24px;
+}
+.header-logo {
+  max-width: 100%;
+  height: auto;
+  width: 500px;
+  margin-bottom: 16px;
 }
 .community-header h1 {
   font-size: 2rem;
@@ -638,4 +644,5 @@ hr {
   .nav-inner { flex-wrap: wrap; gap: 8px; }
   .nav-links { order: 3; flex-basis: 100%; }
   .community-header h1 { font-size: 1.5rem; }
+  .header-logo { width: 320px; }
 }

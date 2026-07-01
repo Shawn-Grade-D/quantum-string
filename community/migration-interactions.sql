@@ -11,7 +11,7 @@ CREATE TABLE bookmarks (
 );
 
 ALTER TABLE bookmarks ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "收藏_select" ON bookmarks FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "收藏_select" ON bookmarks FOR SELECT USING (true);
 CREATE POLICY "收藏_insert" ON bookmarks FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 CREATE POLICY "收藏_delete" ON bookmarks FOR DELETE USING (auth.uid() = user_id);
 

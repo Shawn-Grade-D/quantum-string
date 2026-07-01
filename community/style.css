@@ -53,14 +53,32 @@ body {
   gap: 24px;
 }
 .logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
   text-decoration: none;
   white-space: nowrap;
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+.nav-logo-icon {
+  height: 28px;
+  width: auto;
 }
 .nav-logo-img {
-  height: 32px;
+  height: 36px;
   width: auto;
+  vertical-align: middle;
+}
+/* 移动端适配 */
+@media (max-width: 480px) {
+  .nav-logo-img {
+    height: 28px;
+  }
+  .logo {
+    font-size: 0.95rem;
+  }
 }
 .nav-links {
   display: flex;

@@ -263,7 +263,9 @@ if (isPostDetail) {
         </div>
         <div class="post-content">${renderMarkdownImages(post.content)}</div>
         <div class="post-footer-actions">
-          <button id="likeBtn" class="btn btn-outline" onclick="toggleLike(${post.id})">❤️ 点赞</button>
+          <button id="likeBtn" class="btn btn-outline btn-action" onclick="toggleLike(${post.id})">❤️ <span class="action-label">点赞</span> <span id="likeCount">${post.likes_count || 0}</span></button>
+          <button id="bookmarkBtn" class="btn btn-outline btn-action" onclick="toggleBookmark(${post.id})">⭐ <span class="action-label">收藏</span> <span id="bookmarkCount">${post.bookmarks_count || 0}</span></button>
+          <button class="btn btn-outline btn-action" onclick="sharePost(${post.id}, '${escapeHtml(post.title).replace(/'/g, "\\'")}')">🔗 <span class="action-label">转发</span></button>
           <button id="deletePostBtn" class="btn btn-danger" style="display:none;" onclick="deletePost(${post.id})">🗑️ 删除</button>
           <button class="btn btn-outline btn-report" onclick="reportContent('post', ${post.id}, '${escapeHtml(post.title).replace(/'/g, "\\'")}')">🚩 举报</button>
         </div>
@@ -286,8 +288,23 @@ if (isPostDetail) {
         .maybeSingle();
 
       if (like) {
-        document.getElementById('likeBtn').classList.add('liked');
-        document.getElementById('likeBtn').textContent = '❤️ 已点赞';
+        const likeBtn = document.getElementById('likeBtn');
+        likeBtn.classList.add('liked');
+        likeBtn.innerHTML = '❤️ <span class="action-label">已赞</span> <span id="likeCount">${post.likes_count || 0}</span>';
+      }
+
+      // 检查收藏状态
+      const { data: bookmark } = await supabase
+        .from('bookmarks')
+        .select('*')
+        .eq('post_id', postId)
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (bookmark) {
+        const bmBtn = document.getElementById('bookmarkBtn');
+        bmBtn.classList.add('bookmarked');
+        bmBtn.innerHTML = '⭐ <span class="action-label">已收藏</span> <span id="bookmarkCount">${post.bookmarks_count || 0}</span>';
       }
     }
 
@@ -369,6 +386,10 @@ if (isPostDetail) {
         const privateLabel = isPrivate ? ' <span class="private-badge">🔒 私密</span>' : '';
         const canReply = depth < maxDepth;
 
+        const vc = window._voteCounts || {};
+        const cv = vc[c.id] || { up: 0, down: 0 };
+        const uv = (window._userVotes || {})[c.id];
+
         html += `
           <div class="comment ${isPrivate ? 'comment-private' : ''}" id="comment-${c.id}" style="margin-left:${Math.min(depth, 5) * 24}px">
             <div class="comment-meta">
@@ -377,9 +398,11 @@ if (isPostDetail) {
             </div>
             <div class="comment-content">${renderMarkdownImages(c.content)}</div>
             <div class="comment-actions">
+              <button class="btn-vote ${uv === true ? 'vote-active' : ''}" onclick="voteComment(${c.id}, true, ${postId})" title="认同">👍 <span>${cv.up || ''}</span></button>
+              <button class="btn-vote ${uv === false ? 'vote-active' : ''}" onclick="voteComment(${c.id}, false, ${postId})" title="反对">👎 <span>${cv.down || ''}</span></button>
               ${canReply ? `<button class="btn-reply" onclick="showReplyForm(${c.id}, '${escapeHtml(c.author_name)}')">💬 回复</button>` : ''}
               ${currentUserId === c.author_id ? `<button class="btn-delete-comment" onclick="deleteComment(${c.id}, ${postId})">🗑️</button>` : ''}
-              ${currentUserId && currentUserId !== c.author_id ? `<button class="btn-reply" onclick="reportContent('comment', ${c.id}, '评论')">🚩</button>` : ''}
+              ${currentUserId && currentUserId !== c.author_id ? `<button class="btn-reply" onclick="reportContent('comment', ${c.id}, '评论')">🚩 举报</button>` : ''}
             </div>
             <div id="replyForm-${c.id}" class="reply-form" style="display:none;"></div>
             ${c.children.length ? await renderCommentTree(c.children, depth + 1) : ''}
@@ -392,6 +415,36 @@ if (isPostDetail) {
     // 缓存 session 供 renderCommentTree 使用
     const { data } = await supabase.auth.getSession();
     window.sessionCache = data;
+
+    // 获取当前用户在所有评论上的投票
+    let userVotes = {};
+    if (data?.session?.user) {
+      const { data: votes } = await supabase
+        .from('comment_votes')
+        .select('*')
+        .eq('user_id', data.session.user.id);
+      if (votes) votes.forEach(v => { userVotes[v.comment_id] = v.up; });
+    }
+
+    // 获取评论的认同/反对计数
+    let voteCounts = {};
+    {
+      const commentIds = comments.map(c => c.id);
+      if (commentIds.length) {
+        const { data: vc } = await supabase
+          .from('comment_votes')
+          .select('comment_id, up')
+          .in('comment_id', commentIds);
+        if (vc) {
+          vc.forEach(v => {
+            if (!voteCounts[v.comment_id]) voteCounts[v.comment_id] = { up: 0, down: 0 };
+            v.up ? voteCounts[v.comment_id].up++ : voteCounts[v.comment_id].down++;
+          });
+        }
+      }
+    }
+    window._voteCounts = voteCounts;
+    window._userVotes = userVotes;
 
     list.innerHTML = await renderCommentTree(roots, 0);
   }
@@ -505,6 +558,72 @@ if (isPostDetail) {
 
     // 刷新页面数据
     loadPostDetail();
+  };
+
+  // ====== 收藏 ======
+  window.toggleBookmark = async function(postId) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      alert('请先登录');
+      return;
+    }
+
+    const { data: existing } = await supabase
+      .from('bookmarks')
+      .select('*')
+      .eq('post_id', postId)
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase.from('bookmarks').delete().eq('id', existing.id);
+    } else {
+      await supabase.from('bookmarks').insert({ post_id: postId, user_id: session.user.id });
+    }
+
+    loadPostDetail();
+  };
+
+  // ====== 转发（复制链接） ======
+  window.sharePost = function(postId, title) {
+    const url = `${window.location.origin}/community/post.html?id=${postId}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('链接已复制！\n\n' + url);
+      });
+    } else {
+      prompt('复制以下链接分享：', url);
+    }
+  };
+
+  // ====== 评论投票（认同/反对） ======
+  window.voteComment = async function(commentId, upBool, postId) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      alert('请先登录');
+      return;
+    }
+
+    const { data: existing } = await supabase
+      .from('comment_votes')
+      .select('*')
+      .eq('comment_id', commentId)
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (existing) {
+      if (existing.up === upBool) {
+        // 再次点击相同 → 取消投票
+        await supabase.from('comment_votes').delete().eq('id', existing.id);
+      } else {
+        // 切换投票方向
+        await supabase.from('comment_votes').update({ up: upBool }).eq('id', existing.id);
+      }
+    } else {
+      await supabase.from('comment_votes').insert({ comment_id: commentId, user_id: session.user.id, up: upBool });
+    }
+
+    loadComments(postId);
   };
 
   // ====== 删除帖子 ======

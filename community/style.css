@@ -571,6 +571,40 @@ hr {
 }
 .btn-report:hover { border-color: var(--danger); color: var(--danger); }
 
+/* 帖子操作按钮 */
+.btn-action {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-action .action-label {
+  color: var(--text);
+}
+.btn-action.bookmarked {
+  border-color: #e3b341;
+  color: #e3b341;
+}
+
+/* 评论投票按钮 */
+.btn-vote {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.btn-vote:hover { border-color: var(--accent); color: var(--accent); }
+.btn-vote.vote-active { border-color: var(--accent); color: var(--accent); background: rgba(88, 166, 255, 0.1); }
+
 .label-hint {
   font-size: 0.8rem;
   color: var(--text-muted);

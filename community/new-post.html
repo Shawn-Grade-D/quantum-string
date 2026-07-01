@@ -35,8 +35,13 @@
           <input type="text" id="postTitle" required placeholder="给你的文章起个名字" maxlength="100">
         </div>
         <div class="form-group">
-          <label>内容</label>
+          <label>内容 <span class="label-hint">（支持图片，点击下方 📷 按钮插入）</span></label>
           <textarea id="postContent" rows="12" required placeholder="写点什么吧...支持 Markdown 格式"></textarea>
+          <div class="upload-bar">
+            <button type="button" class="btn-upload" id="postImageBtn" title="插入图片">📷 插入图片</button>
+            <input type="file" id="postImageInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
+            <span id="postUploadStatus" class="upload-status"></span>
+          </div>
         </div>
         <div class="form-group">
           <label>标签（逗号分隔）</label>

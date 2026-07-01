@@ -40,6 +40,9 @@
             <option value="public">🌐 公开</option>
             <option value="private">🔒 仅帖主可见</option>
           </select>
+          <button type="button" class="btn-upload btn-upload-sm" id="commentImageBtn" title="插入图片">📷</button>
+          <input type="file" id="commentImageInput" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;">
+          <span id="commentUploadStatus" class="upload-status"></span>
           <button class="btn btn-primary" onclick="submitComment()">发表评论</button>
         </div>
       </div>

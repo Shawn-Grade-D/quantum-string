@@ -515,6 +515,68 @@ hr {
   font-size: 1rem;
 }
 
+/* ====== 图片上传按钮 ====== */
+.upload-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.btn-upload {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.2s, color 0.2s;
+}
+.btn-upload:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn-upload-sm {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+}
+.upload-status {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.upload-status.error { color: var(--danger); }
+.upload-status.success { color: var(--success); }
+
+/* 帖子/评论中内嵌的图片 */
+.content-image {
+  max-width: 100%;
+  border-radius: var(--radius);
+  margin: 8px 0;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.content-image:hover { opacity: 0.9; }
+
+/* 帖子底部操作栏 */
+.post-footer-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  align-items: center;
+}
+.btn-report {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.btn-report:hover { border-color: var(--danger); color: var(--danger); }
+
+.label-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: normal;
+}
+
 /* ====== 响应式 ====== */
 @media (max-width: 600px) {
   .nav-inner { flex-wrap: wrap; gap: 8px; }

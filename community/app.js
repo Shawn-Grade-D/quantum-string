@@ -3,6 +3,130 @@
 // 使用全局 supabaseClient
 var supabase = window.supabaseClient;
 
+// ====== 图片上传（通用） ======
+const POST_IMAGES_BUCKET = 'post-images';
+
+window.uploadImage = async function(fileInputId, statusId, textareaId) {
+  const fileInput = document.getElementById(fileInputId);
+  const statusEl = document.getElementById(statusId);
+  const textarea = document.getElementById(textareaId);
+
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  // 校验：类型 + 大小
+  const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+  if (!allowed.includes(file.type)) {
+    statusEl.textContent = '仅支持 JPG/PNG/WebP/GIF';
+    statusEl.className = 'upload-status error';
+    fileInput.value = '';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    statusEl.textContent = '图片不能超过 5MB';
+    statusEl.className = 'upload-status error';
+    fileInput.value = '';
+    return;
+  }
+
+  statusEl.textContent = '⏳ 上传中...';
+  statusEl.className = 'upload-status';
+
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    statusEl.textContent = '请先登录';
+    statusEl.className = 'upload-status error';
+    fileInput.value = '';
+    return;
+  }
+
+  const ext = file.name.split('.').pop() || 'jpg';
+  const fileName = `${session.user.id}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from(POST_IMAGES_BUCKET)
+    .upload(fileName, file, {
+      cacheControl: '31536000',
+      contentType: file.type
+    });
+
+  if (error) {
+    statusEl.textContent = '上传失败: ' + error.message;
+    statusEl.className = 'upload-status error';
+    fileInput.value = '';
+    return;
+  }
+
+  const { data: urlData } = supabase.storage
+    .from(POST_IMAGES_BUCKET)
+    .getPublicUrl(fileName);
+
+  const mdImg = `\n![](${urlData.publicUrl})\n`;
+  const cursor = textarea.selectionStart;
+  textarea.value = textarea.value.slice(0, cursor) + mdImg + textarea.value.slice(cursor);
+  textarea.focus();
+  textarea.setSelectionRange(cursor + mdImg.length, cursor + mdImg.length);
+
+  statusEl.textContent = '✅ 图片已插入';
+  statusEl.className = 'upload-status success';
+  fileInput.value = '';
+  setTimeout(() => { statusEl.textContent = ''; statusEl.className = 'upload-status'; }, 3000);
+};
+
+// ====== 举报功能 ======
+window.reportContent = async function(type, targetId, targetTitle) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    alert('请先登录');
+    return;
+  }
+
+  const reason = prompt('请输入举报原因（色情、暴力、骚扰、垃圾广告、侵权、其他）：');
+  if (!reason || !reason.trim()) return;
+
+  const { error } = await supabase.from('reports').insert({
+    reporter_id: session.user.id,
+    target_type: type,
+    target_id: targetId,
+    target_title: targetTitle || '',
+    reason: reason.trim()
+  });
+
+  if (error) {
+    if (error.code === '23505') {
+      alert('你已经举报过了');
+    } else {
+      alert('举报失败：' + error.message);
+    }
+    return;
+  }
+
+  alert('举报已提交，管理员将尽快处理。感谢你的监督！🙏');
+};
+
+// ====== Markdown 图片渲染 ======
+function renderMarkdownImages(text) {
+  if (!text) return escapeHtml(text || '');
+  return escapeHtml(text)
+    .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="content-image" loading="lazy" onclick="window.open(this.src)">')
+    .replace(/\n/g, '<br>');
+}
+
+// ====== 简单敏感词过滤 ======
+const SENSITIVE_PATTERNS = [
+  /赌博|赌场|博彩|六合彩|老虎机/i,
+  /代办.*证件|假证|枪支|毒品|摇头丸|冰毒/i,
+  /招嫖|卖淫|小姐.*上门|一夜情.*约/i,
+  /高利贷|裸贷|套路贷/i,
+  /法轮|flg|falungong/i
+];
+
+function checkSensitive(text) {
+  for (const p of SENSITIVE_PATTERNS) {
+    if (p.test(text)) return true;
+  }
+  return false;
+}
 
 // ====== 当前页面 ======
 const isIndex = document.getElementById('postsList');
@@ -137,9 +261,12 @@ if (isPostDetail) {
           <span>❤️ <span id="likeCount">${post.likes_count || 0}</span></span>
           ${post.tags && post.tags.length ? post.tags.map(t => `<span class="tag">#${escapeHtml(t)}</span>`).join('') : ''}
         </div>
-        <div class="post-content">${escapeHtml(post.content).replace(/\n/g, '<br>')}</div>
-        <button id="likeBtn" class="btn btn-outline" onclick="toggleLike(${post.id})">❤️ 点赞</button>
-        <button id="deletePostBtn" class="btn btn-danger" style="display:none;" onclick="deletePost(${post.id})">🗑️ 删除</button>
+        <div class="post-content">${renderMarkdownImages(post.content)}</div>
+        <div class="post-footer-actions">
+          <button id="likeBtn" class="btn btn-outline" onclick="toggleLike(${post.id})">❤️ 点赞</button>
+          <button id="deletePostBtn" class="btn btn-danger" style="display:none;" onclick="deletePost(${post.id})">🗑️ 删除</button>
+          <button class="btn btn-outline btn-report" onclick="reportContent('post', ${post.id}, '${escapeHtml(post.title).replace(/'/g, "\\'")}')">🚩 举报</button>
+        </div>
       </article>
     `;
 
@@ -248,10 +375,11 @@ if (isPostDetail) {
               <strong><a href="profile.html?id=${c.author_id}" class="author-link">${escapeHtml(c.author_name)}</a></strong>
               <span>${timeAgo(c.created_at)}${privateLabel}</span>
             </div>
-            <div class="comment-content">${escapeHtml(c.content).replace(/\n/g, '<br>')}</div>
+            <div class="comment-content">${renderMarkdownImages(c.content)}</div>
             <div class="comment-actions">
               ${canReply ? `<button class="btn-reply" onclick="showReplyForm(${c.id}, '${escapeHtml(c.author_name)}')">💬 回复</button>` : ''}
               ${currentUserId === c.author_id ? `<button class="btn-delete-comment" onclick="deleteComment(${c.id}, ${postId})">🗑️</button>` : ''}
+              ${currentUserId && currentUserId !== c.author_id ? `<button class="btn-reply" onclick="reportContent('comment', ${c.id}, '评论')">🚩</button>` : ''}
             </div>
             <div id="replyForm-${c.id}" class="reply-form" style="display:none;"></div>
             ${c.children.length ? await renderCommentTree(c.children, depth + 1) : ''}
@@ -292,6 +420,12 @@ if (isPostDetail) {
 
     if (!content) return;
 
+    // 敏感词检查
+    if (checkSensitive(content)) {
+      alert('内容包含违规信息，无法发送。');
+      return;
+    }
+
     const insertData = {
       post_id: postId,
       content,
@@ -331,6 +465,9 @@ if (isPostDetail) {
           <option value="public">🌐 公开</option>
           <option value="private">🔒 仅对方可见</option>
         </select>
+        <button type="button" class="btn-upload btn-upload-sm" onclick="document.getElementById('replyImageInput-${parentId}').click()">📷</button>
+        <input type="file" id="replyImageInput-${parentId}" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none;" onchange="uploadImage('replyImageInput-${parentId}', 'replyUploadStatus-${parentId}', 'replyContent-${parentId}')">
+        <span id="replyUploadStatus-${parentId}" class="upload-status"></span>
         <button class="btn btn-primary btn-sm" onclick="submitComment(${parentId})">发送</button>
         <button class="btn btn-outline btn-sm" onclick="document.getElementById('replyForm-${parentId}').style.display='none'">取消</button>
       </div>
@@ -380,6 +517,14 @@ if (isPostDetail) {
   document.addEventListener('DOMContentLoaded', () => {
     if (typeof checkSession === 'function') checkSession();
     loadPostDetail();
+
+    // 绑定评论图片上传按钮
+    const cmtImgBtn = document.getElementById('commentImageBtn');
+    const cmtImgInput = document.getElementById('commentImageInput');
+    if (cmtImgBtn && cmtImgInput) {
+      cmtImgBtn.addEventListener('click', () => cmtImgInput.click());
+      cmtImgInput.addEventListener('change', () => uploadImage('commentImageInput', 'commentUploadStatus', 'commentContent'));
+    }
   });
 }
 
@@ -402,6 +547,13 @@ if (isNewPost) {
     }
 
     const tags = tagsRaw ? tagsRaw.split(/[,，]/).map(t => t.trim()).filter(t => t) : [];
+
+    // 敏感词检查
+    if (checkSensitive(title) || checkSensitive(content)) {
+      errEl.textContent = '内容包含违规信息，无法发布。';
+      errEl.style.display = 'block';
+      return;
+    }
 
     const { error } = await supabase.from('posts').insert({
       title,
@@ -427,5 +579,13 @@ if (isNewPost) {
       window.location.href = 'login.html';
     }
     if (typeof checkSession === 'function') checkSession();
+
+    // 绑定图片上传按钮
+    const postImgBtn = document.getElementById('postImageBtn');
+    const postImgInput = document.getElementById('postImageInput');
+    if (postImgBtn && postImgInput) {
+      postImgBtn.addEventListener('click', () => postImgInput.click());
+      postImgInput.addEventListener('change', () => uploadImage('postImageInput', 'postUploadStatus', 'postContent'));
+    }
   });
 }

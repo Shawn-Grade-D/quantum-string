@@ -38,7 +38,27 @@ export const defaultContentPageLayout: PageLayout = {
         { Component: Component.ReaderMode() },
       ],
     }),
-    Component.Explorer(),
+    Component.Explorer({
+      title: "📂 导航",
+      folderDefaultState: "open",
+      mapFn: (node) => {
+        const slug = node.slug ?? node.displayName
+        // 顶级栏目加 emoji 图标
+        const emojiMap: Record<string, string> = {
+          "认知思辨": "🧠",
+          "弈理观世": "♟️",
+          "文本深读": "📖",
+          "公案禅思": "🧘",
+          "人间札记": "✍️",
+          "posts": "📡",
+        }
+        const key = node.displayName
+        if (emojiMap[key]) {
+          node.displayName = `${emojiMap[key]} ${key}`
+        }
+        return node
+      },
+    }),
   ],
   right: [
     Component.Graph(),
@@ -62,7 +82,25 @@ export const defaultListPageLayout: PageLayout = {
         { Component: Component.Darkmode() },
       ],
     }),
-    Component.Explorer(),
+    Component.Explorer({
+      title: "📂 导航",
+      folderDefaultState: "open",
+      mapFn: (node) => {
+        const emojiMap: Record<string, string> = {
+          "认知思辨": "🧠",
+          "弈理观世": "♟️",
+          "文本深读": "📖",
+          "公案禅思": "🧘",
+          "人间札记": "✍️",
+          "posts": "📡",
+        }
+        const key = node.displayName
+        if (emojiMap[key]) {
+          node.displayName = `${emojiMap[key]} ${key}`
+        }
+        return node
+      },
+    }),
   ],
   right: [],
 }

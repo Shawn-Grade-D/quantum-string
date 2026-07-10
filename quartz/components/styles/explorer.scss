@@ -102,17 +102,34 @@ button.desktop-explorer {
   align-items: center;
 
   & h2 {
-    font-size: 1rem;
+    font-size: 1.05rem;
+    font-weight: $boldWeight;
     display: inline-block;
     margin: 0;
+    opacity: 0.9;
   }
 }
 
+// 导航标题区：B站/油管风格——加粗、加下划线装饰
+.explorer:has(.title-button) {
+  .title-button {
+    padding: 0.5rem 0.65rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--highlight);
+    }
+  }
+}
+
+// ====== 导航容器 ======
 .explorer-content {
   list-style: none;
   overflow: hidden;
   overflow-y: auto;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
+  padding-right: 4px;
 
   & ul {
     list-style: none;
@@ -120,14 +137,35 @@ button.desktop-explorer {
     padding: 0;
     overscroll-behavior: contain;
 
+    // 顶级文件夹之间加间距（分区感）
+    & > li.has-folder {
+      margin-bottom: 2px;
+    }
+
+    // 普通链接
     & li > a {
+      display: block;
       color: var(--dark);
-      opacity: 0.75;
+      opacity: 0.65;
       pointer-events: all;
+      padding: 0.45rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.93rem;
+      line-height: 1.4;
+      transition: all 0.18s ease;
+      text-decoration: none;
+      margin: 1px 0;
+
+      &:hover {
+        opacity: 1;
+        background-color: var(--highlight);
+      }
 
       &.active {
         opacity: 1;
-        color: var(--tertiary);
+        color: var(--secondary);
+        background-color: var(--highlight);
+        font-weight: $semiBoldWeight;
       }
     }
   }
@@ -135,7 +173,7 @@ button.desktop-explorer {
   .folder-outer {
     display: grid;
     grid-template-rows: 0fr;
-    transition: grid-template-rows 0.3s ease-in-out;
+    transition: grid-template-rows 0.25s ease-in-out;
   }
 
   .folder-outer.open {
@@ -144,25 +182,43 @@ button.desktop-explorer {
 
   .folder-outer > ul {
     overflow: hidden;
-    margin-left: 6px;
-    padding-left: 0.8rem;
-    border-left: 1px solid var(--lightgray);
+    margin-left: 4px;
+    padding-left: 1.2rem;
+    border-left: 2px solid var(--lightgray);
+    border-radius: 0 0 0 4px;
+    transition: border-color 0.3s ease;
+  }
+
+  // 当子项被 hover 时，左侧边框高亮
+  .folder-outer.open > ul:hover {
+    border-left-color: var(--tertiary);
   }
 }
 
+// ====== 文件夹按钮（父级栏目） ======
 .folder-container {
   flex-direction: row;
   display: flex;
   align-items: center;
   user-select: none;
+  padding: 0.3rem 0.25rem;
+  border-radius: 8px;
+  transition: background-color 0.18s ease;
+
+  &:hover {
+    background-color: var(--highlight);
+  }
 
   & div > a {
     color: var(--secondary);
     font-family: var(--headerFont);
     font-size: 0.95rem;
-    font-weight: $semiBoldWeight;
+    font-weight: $boldWeight;
     line-height: 1.5rem;
     display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    transition: color 0.18s ease;
   }
 
   & div > a:hover {
@@ -175,31 +231,44 @@ button.desktop-explorer {
     border: none;
     text-align: left;
     cursor: pointer;
-    padding-left: 0;
-    padding-right: 0;
+    padding: 0.35rem 0.5rem;
     display: flex;
     align-items: center;
     font-family: var(--headerFont);
+    border-radius: 6px;
+    width: 100%;
+    transition: background-color 0.18s ease;
+
+    &:hover {
+      background-color: var(--highlight);
+    }
 
     & span {
       font-size: 0.95rem;
       display: inline-block;
       color: var(--secondary);
-      font-weight: $semiBoldWeight;
+      font-weight: $boldWeight;
       margin: 0;
       line-height: 1.5rem;
       pointer-events: none;
+      letter-spacing: 0.02em;
     }
   }
 }
 
 .folder-icon {
-  margin-right: 5px;
+  margin-right: 6px;
   color: var(--secondary);
   cursor: pointer;
   transition: transform 0.3s ease;
   backface-visibility: visible;
   flex-shrink: 0;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+    color: var(--tertiary);
+  }
 }
 
 li:has(> .folder-outer:not(.open)) > .folder-container > svg {
@@ -210,6 +279,7 @@ li:has(> .folder-outer:not(.open)) > .folder-container > svg {
   color: var(--tertiary);
 }
 
+// ====== 移动端 ======
 .explorer {
   @media all and ($mobile) {
     &.collapsed {

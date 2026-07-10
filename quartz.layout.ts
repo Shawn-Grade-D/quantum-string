@@ -42,15 +42,23 @@ export const defaultContentPageLayout: PageLayout = {
       title: "📂 导航",
       folderDefaultState: "open",
       mapFn: (node) => {
-        const slug = node.slug ?? node.displayName
-        // 顶级栏目加 emoji 图标
         const emojiMap: Record<string, string> = {
-          "认知思辨": "🧠",
+          "物理纵深": "🔬",
+          "密码与分布式": "🔐",
           "弈理观世": "♟️",
           "文本深读": "📖",
+          "关于本站": "ℹ️",
+          "量子视界": "⚛️",
+          "弦论与高维空间": "🌀",
+          "前沿物理随笔": "💡",
+          "区块链原理": "⛓️",
+          "密码学与博弈": "🔑",
+          "系统规则札记": "📋",
+          "围棋弈理": "🎯",
+          "规则博弈随笔": "🎲",
           "公案禅思": "🧘",
-          "人间札记": "✍️",
-          "posts": "📡",
+          "文本精读": "📚",
+          "人物思辨": "🎭",
         }
         const key = node.displayName
         if (emojiMap[key]) {
@@ -87,12 +95,22 @@ export const defaultListPageLayout: PageLayout = {
       folderDefaultState: "open",
       mapFn: (node) => {
         const emojiMap: Record<string, string> = {
-          "认知思辨": "🧠",
+          "物理纵深": "🔬",
+          "密码与分布式": "🔐",
           "弈理观世": "♟️",
           "文本深读": "📖",
+          "关于本站": "ℹ️",
+          "量子视界": "⚛️",
+          "弦论与高维空间": "🌀",
+          "前沿物理随笔": "💡",
+          "区块链原理": "⛓️",
+          "密码学与博弈": "🔑",
+          "系统规则札记": "📋",
+          "围棋弈理": "🎯",
+          "规则博弈随笔": "🎲",
           "公案禅思": "🧘",
-          "人间札记": "✍️",
-          "posts": "📡",
+          "文本精读": "📚",
+          "人物思辨": "🎭",
         }
         const key = node.displayName
         if (emojiMap[key]) {

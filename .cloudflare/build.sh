@@ -4,3 +4,6 @@ npx quartz build
 rm -rf public/community
 cp -r community public/community
 touch public/community/*.html public/community/*.js public/community/*.css
+# 复制小游戏到 public/games/ 目录
+mkdir -p public/games
+cp static/turtle-run.html public/games/turtle-run.html

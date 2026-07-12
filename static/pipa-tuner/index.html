@@ -67,6 +67,27 @@
   .subtitle { text-align:center; color:var(--stxt); font-size:12px; margin-bottom:10px; transition:color 0.4s; }
 
   /* 配色切换 */
+  /* HTTPS 安全提示 */
+  .https-warn {
+    display: none;
+    text-align: center;
+    background: rgba(255, 71, 87, 0.15);
+    border: 1px solid var(--high);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: var(--high);
+    line-height: 1.5;
+  }
+  .https-warn .ref-link {
+    color: var(--actxt);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .https-warn.show { display: block; }
+  .https-warn strong { color: #ff6b6b; }
+
   .skin-row {
     display: flex;
     justify-content: center;
@@ -154,6 +175,10 @@
   .browser-tip a { color:var(--actxt); text-decoration:underline; }
   .note-history { margin-top:6px; display:flex; justify-content:center; gap:3px; flex-wrap:wrap; min-height:16px; }
   .note-history span { font-size:10px; color:var(--bstxt); padding:2px 4px; background:var(--bg); border-radius:4px; transition:background 0.4s,color 0.4s; }
+  /* PWA 安装提示 */
+  .install-hint { display:none; align-items:center; justify-content:center; gap:6px; margin-top:10px; font-size:11px; color:var(--actxt); opacity:0.7; }
+  .install-hint a { color:var(--actxt); text-decoration:underline; }
+  .install-hint svg { width:14px; height:14px; fill:var(--actxt); }
   .footer { margin-top:12px; text-align:center; font-size:10px; color:var(--bstxt); letter-spacing:1px; transition:color 0.4s; }
 
   @media (max-width:380px) {
@@ -169,6 +194,14 @@
 <div class="container" id="container">
   <h1>🎵 琵琶调音器</h1>
   <div class="subtitle">Pipa Tuner · A=440Hz</div>
+
+  <!-- HTTPS 安全提示 -->
+  <div id="httpsWarn" class="https-warn">
+    <strong>🔒 需要 HTTPS</strong><br>
+    麦克风仅支持安全连接。<br>
+    请使用 <span class="ref-link" onclick="document.getElementById('refBtn').click()">🔊 参考音</span> 手动调音，
+    或通过 <a href="https://cissylin.github.io/pipa-tuner/" target="_blank" style="color:var(--actxt)">GitHub Pages 🔗</a> 访问以获得完整功能。
+  </div>
 
   <div class="browser-tip" id="browserTip">💡 建议使用 <b>微信内置浏览器、夸克、Chrome</b> 打开，麦克风权限体验最佳。华为自带浏览器可能无法弹出权限窗口。</div>
 
@@ -250,6 +283,11 @@
   </div>
 
   <div class="note-history" id="noteHistory"></div>
+  <!-- PWA 安装提示 -->
+  <div class="install-hint" id="installHint">
+    <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+    <span>添加到主屏幕，像 App 一样使用</span>
+  </div>
   <div class="footer">🥚 蛋蛋Cissy联合出品</div>
 </div>
 
@@ -269,6 +307,13 @@ class Tuner{
     this.gh=document.getElementById('gaugeHint');this.ndl=document.getElementById('needle');
     this.ct=document.getElementById('container');this.sk=document.querySelectorAll('.skin-dot');
     this.notes=[];
+    // 检查安全上下文（HTTPS）
+    if(!window.isSecureContext){
+      document.getElementById('httpsWarn').classList.add('show');
+      this.mb.style.opacity='0.4';this.mb.style.pointerEvents='none';
+      this.stt.textContent='🔒 请使用 HTTPS 或本地部署访问';
+      this.stt.className='status-text error';
+    }
     this.mb.addEventListener('click',()=>{this.ls?this.stop():this.start();});
     this.sb.forEach(b=>{b.addEventListener('click',()=>{this.sb.forEach(x=>x.classList.remove('active'));b.classList.add('active');this.tf=parseFloat(b.dataset.freq);this.tn=b.dataset.name;this.updN(null);})});
     this.rb.addEventListener('click',()=>{this.pl?this.sRef():this.pRef()});
@@ -285,7 +330,17 @@ class Tuner{
     this.src.connect(this.an);this.ls=true;this.mb.classList.add('active');
     this.stt.textContent='🎙 监听中…';this.stt.className='status-text listening';this.gh.textContent='弹拨琴弦';
     this.loop();
-  }catch(e){this.stt.textContent='❌ 麦克风不可用: '+e.message;this.stt.className='status-text error';console.error(e);}}
+  }catch(e){
+    let msg;
+    if(e.name==='NotAllowedError'||e.message.includes('permission'))
+      msg='❌ 麦克风权限被拒绝，请在浏览器设置中允许';
+    else if(e.name==='NotFoundError')
+      msg='❌ 未检测到麦克风设备';
+    else if(!window.isSecureContext)
+      msg='🔒 需要 HTTPS 访问才能使用麦克风';
+    else
+      msg='❌ 麦克风不可用: '+e.message;
+    this.stt.textContent=msg;this.stt.className='status-text error';console.error(e);}}
   stop(){this.ls=false;if(this.rf){cancelAnimationFrame(this.rf);this.rf=null;}if(this.st){this.st.getTracks().forEach(t=>t.stop());this.st=null;}if(this.ac){this.ac.close();this.ac=null;}this.mb.classList.remove('active');this.stt.textContent='点击麦克风开始';this.stt.className='status-text';this.gh.textContent='弹拨琴弦';this.nn.textContent='—';this.no.textContent='';this.nf.textContent='— Hz';this.nd.classList.remove('in-tune');this.cd.textContent='—';this.cd.className='gauge-cents';this.ndl.setAttribute('transform','rotate(0,145,130)');this.sRef();}
   loop(){if(!this.ls)return;const b=new Float32Array(this.an.fftSize);this.an.getFloatTimeDomainData(b);const f=autoCorr(b,this.ac.sampleRate);if(f>0){const n=f2n(f);this.updD(n);this.updN(n);}else{this.nn.textContent='…';this.no.textContent='';this.nf.textContent='— Hz';this.nd.classList.remove('in-tune');}this.rf=requestAnimationFrame(()=>this.loop());}
   updD(n){if(!n)return;this.nn.textContent=n.name;this.no.textContent='Octave '+n.octave;this.nf.textContent=n.freq.toFixed(1)+' Hz';this.notes.unshift(n.name+n.octave);if(this.notes.length>12)this.notes.pop();this.nh.innerHTML=this.notes.map(x=>`<span>${x}</span>`).join('');}
@@ -293,7 +348,13 @@ class Tuner{
   pRef(){if(!this.ac||this.ac.state==='closed')this.ac=new(window.AudioContext||window.webkitAudioContext)();if(this.pl)return;this.osc=this.ac.createOscillator();this.gn=this.ac.createGain();this.osc.type='sine';this.osc.frequency.value=this.tf;this.gn.gain.value=0.3;this.osc.connect(this.gn);this.gn.connect(this.ac.destination);this.osc.start();this.pl=true;this.rb.classList.add('active');this.rb.textContent='⏹ 停止参考音';}
   sRef(){if(this.osc){try{this.osc.stop()}catch(e){}this.osc=null;}if(this.gn){this.gn.disconnect();this.gn=null;}this.pl=false;this.rb.classList.remove('active');this.rb.textContent='🔊 播放参考音';}
 }
-document.addEventListener('DOMContentLoaded',()=>{new Tuner();});
+document.addEventListener('DOMContentLoaded',()=>{new Tuner();
+  // 注册 Service Worker → PWA 安装支持
+  if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js').catch(e=>console.log('SW:',e.message));
+  // 检测是否已安装为 PWA
+  if(!window.navigator.standalone&&!window.matchMedia('(display-mode:standalone)').matches){
+    const h=document.getElementById('installHint');if(h)h.style.display='flex';
+  }});
 </script>
 </body>
 </html>

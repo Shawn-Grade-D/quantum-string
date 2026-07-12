@@ -3,14 +3,17 @@
   "short_name": "调音器",
   "description": "蛋蛋Cissy联合出品 · 琵琶调音器",
   "start_url": ".",
+  "scope": ".",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#1a1a2e",
   "theme_color": "#16213e",
   "orientation": "portrait",
+  "categories": ["music", "utilities"],
   "icons": [
     {
       "src": "icon.svg",
-      "sizes": "192x192",
+      "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
@@ -18,7 +21,8 @@
       "src": "icon.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "screenshots": []
 }

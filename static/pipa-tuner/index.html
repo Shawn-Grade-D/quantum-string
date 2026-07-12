@@ -146,6 +146,12 @@
   .status-text.listening { color:var(--accent); }
   .status-text.error { color:var(--high); }
 
+  .browser-tip {
+    background:rgba(255,165,2,0.12); border:1px solid rgba(255,165,2,0.25);
+    border-radius:10px; padding:8px 12px; margin-bottom:10px; font-size:11px;
+    color:var(--low); text-align:center; line-height:1.5; transition:all 0.4s;
+  }
+  .browser-tip a { color:var(--actxt); text-decoration:underline; }
   .note-history { margin-top:6px; display:flex; justify-content:center; gap:3px; flex-wrap:wrap; min-height:16px; }
   .note-history span { font-size:10px; color:var(--bstxt); padding:2px 4px; background:var(--bg); border-radius:4px; transition:background 0.4s,color 0.4s; }
   .footer { margin-top:12px; text-align:center; font-size:10px; color:var(--bstxt); letter-spacing:1px; transition:color 0.4s; }
@@ -163,6 +169,8 @@
 <div class="container" id="container">
   <h1>🎵 琵琶调音器</h1>
   <div class="subtitle">Pipa Tuner · A=440Hz</div>
+
+  <div class="browser-tip" id="browserTip">💡 建议使用 <b>微信内置浏览器、夸克、Chrome</b> 打开，麦克风权限体验最佳。华为自带浏览器可能无法弹出权限窗口。</div>
 
   <!-- 配色 -->
   <div class="skin-row" id="skinRow">
@@ -267,6 +275,10 @@ class Tuner{
     this.sk.forEach(s=>{s.addEventListener('click',()=>{this.sk.forEach(x=>x.classList.remove('active'));s.classList.add('active');const skin=s.dataset.skin;this.ct.className='container'+(skin?' skin-'+skin:'');})});
   }
   async start(){try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+      document.getElementById('browserTip').style.cssText='background:rgba(255,71,87,0.18);border-color:rgba(255,71,87,0.4);color:#ff4757;';
+      throw new Error('当前浏览器不支持麦克风，请用微信/夸克/Chrome 打开本页面');
+    }
     this.ac=new(window.AudioContext||window.webkitAudioContext)();
     this.st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
     this.src=this.ac.createMediaStreamSource(this.st);this.an=this.ac.createAnalyser();this.an.fftSize=2048;

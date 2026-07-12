@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🐢 安安快跑 — 量子弦之链</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../static/favicon-32x32.png">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #1a1a2e;
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh; font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+    #gameWrapper {
+      position: relative;
+      border: 2px solid #333;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(88, 166, 255, 0.2);
+    }
+    canvas { display: block; background: #f0e6d3; }
+    #ui {
+      position: absolute; top: 12px; left: 16px;
+      color: #4a3728; font-size: 18px; font-weight: 700;
+      pointer-events: none;
+      text-shadow: 0 1px 2px rgba(255,255,255,0.5);
+    }
+    #gameOver {
+      display: none;
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      background: rgba(26,26,46,0.95); color: #e6edf3;
+      padding: 32px 40px; border-radius: 16px;
+      text-align: center; z-index: 10;
+    }
+    #gameOver h2 { font-size: 28px; margin-bottom: 8px; }
+    #gameOver p { color: #8b949e; margin-bottom: 20px; }
+    #gameOver button {
+      padding: 10px 28px; font-size: 16px; border: none;
+      border-radius: 8px; background: #58a6ff; color: #fff;
+      cursor: pointer; font-weight: 700;
+    }
+    #gameOver button:hover { background: #79c0ff; }
+    #turtleSelect {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      text-align: center; z-index: 10;
+      overflow: hidden;
+    #turtleSelect h2 {
+      color: #58a6ff; font-size: 24px; margin-bottom: 16px;
+    }
+    #turtleOptions {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 8px;
+    }
+    .turtle-option {
+      cursor: pointer;
+      text-align: center; transition: filter 0.15s;
+      width: 85px; padding: 4px;
+    }
+    .turtle-option:hover { filter: brightness(1.3); }
+    .turtle-option .avatar {
+      width: 64px; height: 64px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; margin-bottom: 6px;
+    }
+    .turtle-option .name { color: #e6edf3; font-size: 14px; }
+  </style>
+</head>
+<body>
+<div id="gameWrapper">
+  <canvas id="gameCanvas"></canvas>
+  <div id="ui">🐢 <span id="score">0</span></div>
+  <div id="gameOver">
+    <h2>🐢 撞上了！</h2>
+    <p id="finalScore">得分：0</p>
+    <button onclick="restartGame()">再来一次</button>
+  </div>
+  <div id="turtleSelect">
+    <h2>选一只乌龟出发 🐢</h2>
+    <div id="turtleOptions"></div>
+  </div>
+</div>
+
+<script>
+// ====== 乌龟数据 ======
+const turtles = [
+  { name: '安安', type: '黄缘', color: '#8B6914', shell: '#C4922E', desc: '雌性安徽黄缘，沉稳大气' },
+  { name: '乐乐', type: '黄缘', color: '#A0781E', shell: '#D4A43C', desc: '雄性小黄缘，活泼好动' },
+  { name: '布布', type: '安布闭壳', color: '#5D4037', shell: '#795548', desc: '安布闭壳龟，内敛低调' },
+  { name: '西瓜', type: '火焰', color: '#D32F2F', shell: '#FF5722', desc: '火焰龟，热情似火' },
+  { name: '招财', type: '南石金钱', color: '#F9A825', shell: '#FFC107', desc: '招财进宝，财源滚滚' },
+  { name: '钟离', type: '黄耳', color: '#33691E', shell: '#689F38', desc: '黄耳龟，优雅从容' },
+  { name: 'B5',   type: '巴西', color: '#1B5E20', shell: '#4CAF50', desc: '第一只龟，老大哥' },
+  { name: '细佬', type: '地图', color: '#37474F', shell: '#607D8B', desc: '地图龟，纹路精妙' },
+  { name: '行秋', type: '草龟', color: '#3E2723', shell: '#5D4037', desc: '草龟，质朴敦厚' },
+  { name: '小宝', type: '麝香', color: '#424242', shell: '#757575', desc: '麝香龟，小巧精致' },
+];
+
+let chosenIdx = 0;
+let gameRunning = false;
+let score = 0;
+let highScore = parseInt(localStorage.getItem('turtleRunHigh') || '0');
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// 响应式画布
+const W = Math.min(1000, window.innerWidth - 8);
+const H = Math.min(480, W * 0.48);
+canvas.width = W; canvas.height = H;
+
+// ===== 游戏状态 =====
+let turtle = { x: 80, y: 0, vy: 0, w: 32, h: 22, jumping: false, ducking: false };
+let obstacles = [];
+let clouds = [];
+let groundOffset = 0;
+let speed = 1.8;
+let frame = 0;
+let gameSpeed = 1;
+const GRAVITY = 0.08;
+const JUMP_FORCE = -6;
+const GROUND_Y = H - 42;
+
+turtle.y = GROUND_Y - turtle.h;
+
+// ===== 绘制函数 =====
+function drawTurtle(x, y, w, h, ducking) {
+  const s = turtles[chosenIdx];
+  const dh = ducking ? h * 0.55 : h;
+  const dy = ducking ? y + h - dh : y;
+
+  // 壳
+  ctx.fillStyle = s.shell;
+  ctx.beginPath();
+  if (ducking) {
+    ctx.ellipse(x + w/2, dy + dh * 0.6, w * 0.48, dh * 0.52, 0, 0, Math.PI * 2);
+  } else {
+    ctx.ellipse(x + w/2, dy + dh * 0.45, w * 0.48, dh * 0.48, 0, 0, Math.PI * 2);
+  }
+  ctx.fill();
+  // 壳纹
+  ctx.strokeStyle = s.color;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + w * 0.35, dy + dh * 0.15);
+  ctx.lineTo(x + w * 0.5, dy + dh * 0.55);
+  ctx.lineTo(x + w * 0.65, dy + dh * 0.15);
+  ctx.moveTo(x + w * 0.2, dy + dh * 0.35);
+  ctx.lineTo(x + w * 0.5, dy + dh * 0.55);
+  ctx.moveTo(x + w * 0.8, dy + dh * 0.35);
+  ctx.lineTo(x + w * 0.5, dy + dh * 0.55);
+  ctx.stroke();
+
+  // 头
+  if (!ducking) {
+    ctx.fillStyle = s.color;
+    ctx.beginPath();
+    ctx.arc(x + w + 4, dy + dh * 0.3, 7, 0, Math.PI * 2);
+    ctx.fill();
+    // 眼睛
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(x + w + 7, dy + dh * 0.22, 2.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#111';
+    ctx.beginPath(); ctx.arc(x + w + 8, dy + dh * 0.20, 1.2, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // 四只脚
+  ctx.fillStyle = s.color;
+  const footW = 5, footH = 4;
+  [-0.3, -0.1, 0.15, 0.35].forEach(offset => {
+    const fx = x + w * (0.2 + offset);
+    const fy = dy + dh * 0.75;
+    const legPhase = Math.sin((frame + offset * 20) * 0.2);
+    ctx.fillRect(fx, fy + legPhase * 2, footW, footH);
+  });
+}
+
+function drawObstacle(obs) {
+  // 仙人掌本体
+  ctx.fillStyle = '#2E7D32';
+  ctx.fillRect(obs.x + obs.w * 0.35, obs.y, obs.w * 0.3, obs.h * 0.6);
+  ctx.fillRect(obs.x + obs.w * 0.1, obs.y + obs.h * 0.15, obs.w * 0.25, obs.h * 0.45);
+  ctx.fillRect(obs.x + obs.w * 0.65, obs.y + obs.h * 0.1, obs.w * 0.25, obs.h * 0.5);
+  // 刺
+  ctx.fillStyle = '#81C784';
+  ctx.fillRect(obs.x + obs.w * 0.4, obs.y + obs.h * 0.05, 2, 8);
+  ctx.fillRect(obs.x + obs.w * 0.35, obs.y + obs.h * 0.25, 2, 6);
+  ctx.fillRect(obs.x + obs.w * 0.55, obs.y + obs.h * 0.1, 2, 7);
+  // 花
+  ctx.fillStyle = '#E91E63';
+  ctx.beginPath(); ctx.arc(obs.x + obs.w * 0.5, obs.y + 4, 3, 0, Math.PI * 2); ctx.fill();
+  // 空中标志：小翅膀
+  if (obs.floating) {
+    ctx.fillStyle = '#FFD54F';
+    ctx.fillRect(obs.x - 4, obs.y + obs.h * 0.35, 6, 3);
+    ctx.fillRect(obs.x + obs.w - 2, obs.y + obs.h * 0.35, 6, 3);
+  }
+}
+
+function drawGround() {
+  ctx.fillStyle = '#C49A4A';
+  ctx.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+  // 纹理
+  ctx.fillStyle = '#B8893A';
+  for (let i = -groundOffset % 30; i < W; i += 30) {
+    ctx.fillRect(i, GROUND_Y, 15, 3);
+    ctx.fillRect(i + 10, GROUND_Y + 8, 20, 2);
+  }
+}
+
+function drawCloud(c) {
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.beginPath();
+  ctx.arc(c.x, c.y, 20, 0, Math.PI * 2);
+  ctx.arc(c.x + 18, c.y - 8, 16, 0, Math.PI * 2);
+  ctx.arc(c.x + 36, c.y, 20, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function drawSky() {
+  const grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+  grad.addColorStop(0, '#87CEEB');
+  grad.addColorStop(1, '#E0D5C0');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, GROUND_Y);
+}
+
+// ===== 游戏逻辑 =====
+function spawnObstacle() {
+  if (obstacles.length > 0 && obstacles[obstacles.length - 1].x > W - 420) return;
+  const count = Math.random() < 0.25 ? 2 : 1;
+  for (let i = 0; i < count; i++) {
+    const h = 24 + Math.random() * 22;
+    // 70% 在地面，30% 在空中漂浮（仙人掌鸟）
+    const floating = Math.random() < 0.3;
+    const groundY = GROUND_Y - h;
+    const airY = groundY - (40 + Math.random() * 80);
+    obstacles.push({
+      x: W + i * 70,
+      y: floating ? Math.max(20, airY) : groundY,
+      w: 22 + Math.random() * 12,
+      h: h,
+      floating: floating,
+    });
+  }
+}
+
+function checkCollision(obs) {
+  const tx = turtle.x + 6;
+  const tw = turtle.w - 12;
+  const ty = turtle.y + (turtle.ducking ? turtle.h * 0.4 : 2);
+  const th = turtle.ducking ? turtle.h * 0.55 : turtle.h - 4;
+  const ox = obs.x + 2;
+  const ow = obs.w - 4;
+  const oy = obs.y + 2;
+  const oh = obs.h - 4;
+  return tx < ox + ow && tx + tw > ox && ty < oy + oh && ty + th > oy;
+}
+
+function update() {
+  if (!gameRunning) return;
+
+  // 跳跃物理
+  turtle.vy += GRAVITY;
+  turtle.y += turtle.vy;
+  if (turtle.y >= GROUND_Y - turtle.h) {
+    turtle.y = GROUND_Y - turtle.h;
+    turtle.vy = 0;
+    turtle.jumping = false;
+  }
+
+  // 障碍物移动
+  obstacles.forEach(o => o.x -= speed);
+  obstacles = obstacles.filter(o => o.x > -60);
+
+  // 碰撞检测
+  for (const obs of obstacles) {
+    if (checkCollision(obs)) {
+      endGame();
+      return;
+    }
+  }
+
+  // 计分
+  score += 1;
+  document.getElementById('score').textContent = score;
+
+  // 渐进加速：每1000分提速0.05，上限12
+  if (score > 0 && score % 1000 === 0) {
+    speed = Math.min(speed + 0.05, 12);
+  }
+
+  // 生成障碍：速度越快，间隔越短
+  const spawnInterval = Math.max(40, Math.floor(120 - speed * 5));
+  if (frame % spawnInterval === 0) {
+    spawnObstacle();
+  }
+
+  // 云
+  clouds.forEach(c => c.x -= 0.5 + speed * 0.1);
+  clouds = clouds.filter(c => c.x > -120);
+  if (frame % 200 === 0 && clouds.length < 4) {
+    clouds.push({ x: W + 20, y: 30 + Math.random() * 60 });
+  }
+
+  groundOffset += speed;
+  frame++;
+}
+
+function draw() {
+  drawSky();
+  clouds.forEach(drawCloud);
+  drawGround();
+  obstacles.forEach(drawObstacle);
+  drawTurtle(turtle.x, turtle.y, turtle.w, turtle.h, turtle.ducking);
+}
+
+function gameLoop() {
+  update();
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+function endGame() {
+  gameRunning = false;
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem('turtleRunHigh', highScore);
+  }
+  document.getElementById('finalScore').textContent = `得分：${score}  |  最高：${highScore}`;
+  document.getElementById('gameOver').style.display = 'block';
+}
+
+function restartGame() {
+  score = 0;
+  speed = 1.8;
+  turtle.y = GROUND_Y - turtle.h;
+  turtle.vy = 0;
+  turtle.jumping = false;
+  turtle.ducking = false;
+  obstacles = [];
+  frame = 0;
+  gameSpeed = 1;
+  document.getElementById('score').textContent = '0';
+  document.getElementById('gameOver').style.display = 'none';
+  gameRunning = true;
+}
+
+function startGame(idx) {
+  chosenIdx = idx;
+  document.getElementById('turtleSelect').style.display = 'none';
+  restartGame();
+}
+
+// ===== 控制 =====
+document.addEventListener('keydown', e => {
+  if (!gameRunning) return;
+  if (e.code === 'Space' || e.code === 'ArrowUp') {
+    e.preventDefault();
+    if (!turtle.jumping) {
+      turtle.vy = JUMP_FORCE;
+      turtle.jumping = true;
+    }
+  }
+  if (e.code === 'ArrowDown') {
+    e.preventDefault();
+    turtle.ducking = true;
+  }
+});
+document.addEventListener('keyup', e => {
+  if (e.code === 'ArrowDown') turtle.ducking = false;
+});
+
+// 触屏
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (!gameRunning) return;
+  if (!turtle.jumping) {
+    turtle.vy = JUMP_FORCE;
+    turtle.jumping = true;
+  }
+});
+canvas.addEventListener('mousedown', () => {
+  if (!gameRunning) return;
+  if (!turtle.jumping) {
+    turtle.vy = JUMP_FORCE;
+    turtle.jumping = true;
+  }
+});
+
+// ===== 角色选择 UI =====
+const optionsDiv = document.getElementById('turtleOptions');
+turtles.forEach((t, i) => {
+  const div = document.createElement('div');
+  div.className = 'turtle-option';
+  div.innerHTML = `<div class="avatar" style="background:${t.shell}">🐢</div><div class="name">${t.name}<br><small>${t.type}</small></div>`;
+  div.onclick = () => startGame(i);
+  optionsDiv.appendChild(div);
+});
+
+// 启动渲染循环
+gameLoop();
+</script>
+</body>
+</html>
+

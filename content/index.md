@@ -17,8 +17,25 @@ description: Quantum String — 宇宙的秩序由物理法则构建，系统的
 
 ---
 
-| [🏠 首页](/) | [🔬 物理纵深](./物理纵深/) | [🔐 密码与分布式](./密码与分布式/) | [♟ 弈理观世](./弈理观世/) | [📖 文本深读](./文本深读/) | [🎮 小游戏](./小游戏/) | [🧩 小程序](./小程序/) | [ℹ 关于本站](./关于本站/) |
-|---|---|---|---|---|---|
+<nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:16px 0;">
+  <a href="/" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#284b63,#3a6b8c);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🏠 首页</a>
+
+  <a href="./物理纵深/" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#1a5276,#2980b9);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🔬 物理纵深</a>
+
+  <a href="./密码与分布式/" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#6c3483,#a569bd);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🔐 密码与分布式</a>
+
+  <a href="./弈理观世/" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#117864,#1abc9c);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">♟ 弈理观世</a>
+
+  <a href="./文本深读/" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#b9770e,#f39c12);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">📖 文本深读</a>
+
+  <a href="./小游戏/" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#c0392b,#e74c3c);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🎮 小游戏</a>
+
+  <a href="./小程序/" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#2471a3,#5dade2);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🧩 小程序</a>
+
+  <a href="./community/" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#5b2c6f,#8e44ad);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">🪐 社区</a>
+
+  <a href="./关于本站/" style="display:inline-block;padding:10px 18px;background:linear-gradient(135deg,#2c3e50,#5d6d7e);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.25)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.15)'">ℹ 关于本站</a>
+</nav>
 
 ---
 

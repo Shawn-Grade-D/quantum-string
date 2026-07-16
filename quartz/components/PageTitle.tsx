@@ -12,7 +12,7 @@ const PageTitle: QuartzComponent = ({ fileData, cfg, displayClass }: QuartzCompo
         <a href={baseDir}>{title}</a>
       </h2>
       <div class="site-nav-links">
-        <a href={baseDir + "community/"}>🌐 社区</a>
+        <a href="/community/">🌐 社区</a>
         <span class="nav-sep">|</span>
         <a href="/community/turtle-run.html">🐢 游戏</a>
       </div>
